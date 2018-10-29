@@ -137,6 +137,12 @@ public:
             it->key = std::move(key);
         }
 
+        void deleteRow(){
+            auto keyMapIt = table->keyMap.find(it->key);
+            table->keyMap.erase(keyMapIt);
+            it = table->data.erase(it);
+        }
+
         /**
          * Accessing by index should be, at least as fast as accessing by field name.
          * Clients should prefer accessing by index if the same field is accessed frequently
