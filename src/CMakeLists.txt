@@ -23,7 +23,7 @@ set(SOURCE_FILES
 
         query/data/InsertQuery.cpp query/data/InsertQuery.h
         query/data/UpdateQuery.cpp query/data/UpdateQuery.h
-        )
+        query/data/MaxQuery.h query/data/MaxQuery.cpp)
 add_executable(lemondb main.cpp ${SOURCE_FILES})
 target_link_libraries(lemondb pthread)
 
