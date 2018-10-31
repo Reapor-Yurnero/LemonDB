@@ -26,14 +26,13 @@ set(SOURCE_FILES
         query/data/MaxQuery.h query/data/MaxQuery.cpp
         query/data/MinQuery.cpp query/data/MinQuery.h
         query/data/SwapQuery.cpp query/data/SwapQuery.h
-        query/management/TruncateTableQuery.cpp
-        query/management/TruncateTableQuery.h
+        query/management/TruncateTableQuery.cpp query/management/TruncateTableQuery.h
         query/data/AddQuery.cpp query/data/AddQuery.h
         query/data/SubQuery.cpp query/data/SubQuery.h
         query/data/SelectQuery.cpp query/data/SelectQuery.h
         query/data/DeleteQuery.cpp query/data/DeleteQuery.h
+        query/data/CountQuery.cpp query/data/CountQuery.h
         )
-
 
 add_executable(lemondb main.cpp ${SOURCE_FILES})
 target_link_libraries(lemondb pthread)

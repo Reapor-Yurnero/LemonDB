@@ -106,11 +106,13 @@ int main(int argc, char *argv[]) {
             if (result->success()) {
                 if (result->display()) {
                     std::cout << *result;
+                    //std::cout.flush();
                 } else {
 #ifndef NDEBUG
                     std::cout.flush();
                     std::cerr << *result;
 #endif
+                    //std::cout.flush();
                 }
             } else {
                 std::cout.flush();

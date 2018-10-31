@@ -22,6 +22,7 @@
 #include "data/SubQuery.h"
 #include "data/SelectQuery.h"
 #include "data/DeleteQuery.h"
+#include "data/CountQuery.h"
 
 #include <iomanip>
 #include <iostream>
@@ -171,9 +172,9 @@ Query::Ptr ComplexQueryBuilder::tryExtractQuery(TokenizedQueryString &query) {
         /*return std::make_unique<DuplicateQuery>(
                 this->targetTable, this->operandToken, this->conditionToken);*/
     if (operation == "COUNT")
-        return std::make_unique<NopQuery>(); // Not implemented
-        /*return std::make_unique<CountQuery>(
-                this->targetTable, this->operandToken, this->conditionToken);*/
+        //return std::make_unique<NopQuery>(); // Not implemented
+        return std::make_unique<CountQuery>(
+                this->targetTable, this->operandToken, this->conditionToken);
     if (operation == "SUM")
         return std::make_unique<NopQuery>(); // Not implemented
         /*return std::make_unique<SumQuery>(
