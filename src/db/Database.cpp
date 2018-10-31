@@ -67,7 +67,7 @@ void Database::truncateTable(const std::string &tableName) {
                 "Error when trying to drop table \"" + tableName + "\". Table not found."
         );
     }
-    it->second->clear_data();
+    it->second->clear();
 }
 
 void Database::printAllTable() {
