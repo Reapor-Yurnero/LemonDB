@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 
