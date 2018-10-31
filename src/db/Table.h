@@ -326,6 +326,13 @@ public:
     const std::vector<FieldNameType> &field() const { return this->fields; }
 
     /**
+     * Clear data content in the table for truncate
+     */
+    void clear_data() {
+        data.clear();
+    }
+
+    /**
      * Clear all content in the table
      * @return rows affected
      */

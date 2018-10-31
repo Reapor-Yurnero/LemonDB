@@ -60,6 +60,16 @@ void Database::dropTable(const std::string &tableName) {
     this->tables.erase(it);
 }
 
+void Database::truncateTable(const std::string &tableName) {
+    auto it = this->tables.find(tableName);
+    if (it == this->tables.end()) {
+        throw TableNameNotFound(
+                "Error when trying to drop table \"" + tableName + "\". Table not found."
+        );
+    }
+    it->second->clear_data();
+}
+
 void Database::printAllTable() {
     const int width = 15;
     std::cout << "Database overview:" << std::endl;
@@ -194,3 +204,5 @@ void Database::exit() {
     // Might cause problem ...
     std::exit(0);
 }
+
+

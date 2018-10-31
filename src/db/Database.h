@@ -39,6 +39,9 @@ public:
 
     void dropTable(const std::string &tableName);
 
+    //for truncate
+    void truncateTable(const std::string &tableName);
+
     void printAllTable();
 
     Table &operator[](const std::string &tableName);
