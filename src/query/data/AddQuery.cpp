@@ -1,53 +1,56 @@
 //
-// Created by wenda on 10/30/18.
+// Created by Reapor Yurnero on 31/10/2018.
 //
 
-#include "MaxQuery.h"
+#include "AddQuery.h"
+
 #include "../../db/Database.h"
 #include "../QueryResult.h"
 
 #include <algorithm>
 
-constexpr const char *MaxQuery::qname;
+constexpr const char *AddQuery::qname;
 
-QueryResult::Ptr MaxQuery::execute() {
+QueryResult::Ptr AddQuery::execute() {
     using namespace std;
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
-                "No operand (? operands)."_f % operands.size()
+                "Invalid number of operands (? operands)."_f % operands.size()
         );
     Database &db = Database::getInstance();
+    Table::SizeType counter = 0;
     try {
-        /*this->max.clear();*/
-        this->max.reserve(this->operands.size());
+        this->add_src.reserve(this->operands.size()-1);
         auto &table = db[this->targetTable];
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(
-                        R"(Can not input KEY for comparison.)"_f
+                        R"(Can not input KEY for ADD.)"_f
                 );
-            } else {
-                this->max.emplace_back(make_pair(table.getFieldIndex(*it),Table::ValueTypeMin));
+            }
+            else {
+                if (it+1 != this->operands.end()) {
+                    add_src.emplace_back(table.getFieldIndex(*it));
+                }
+                else add_des = table.getFieldIndex(*it);
             }
         }
         auto result = initCondition(table);
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
-                    for (auto iter=this->max.begin();iter!=this->max.end();++iter){
-                        if( (*it)[(*iter).first] > (*iter).second )
-                            (*iter).second = (*it)[(*iter).first];
+                    Table::ValueType sum = 0;
+                    for (auto srcitr = add_src.begin();srcitr!=add_src.end();++srcitr) {
+                        sum += (*it)[*srcitr];
                     }
+                    (*it)[add_des] = sum;
+                    ++counter;
                 }
             }
         }
 
-        vector<Table::ValueType> max_result;
-        for (unsigned int i=0;i<this->max.size();i++){
-            max_result.emplace_back(this->max.at(i).second);
-        }
-        return make_unique<SuccessMsgResult>(max_result);
+        return make_unique<RecordCountResult>(counter);
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
@@ -61,6 +64,6 @@ QueryResult::Ptr MaxQuery::execute() {
     }
 }
 
-std::string MaxQuery::toString() {
-    return "QUERY = MAX " + this->targetTable + "\"";
+std::string AddQuery::toString() {
+    return "QUERY = ADD " + this->targetTable + "\"";
 }
