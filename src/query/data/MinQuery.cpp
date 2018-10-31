@@ -1,20 +1,18 @@
 //
-// Created by wenda on 10/30/18.
+// Created by Reapor Yurnero on 31/10/2018.
 //
 
-//
-// Created by wenda on 10/30/18.
-//
+#include "MinQuery.h"
 
-#include "MaxQuery.h"
 #include "../../db/Database.h"
 #include "../QueryResult.h"
 
 #include <algorithm>
 
-constexpr const char *MaxQuery::qname;
+constexpr const char *MinQuery::qname;
 
-QueryResult::Ptr MaxQuery::execute() {
+QueryResult::Ptr MinQuery::execute() {
+    // todo: optimize the data structure for comparison
     using namespace std;
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
@@ -23,8 +21,8 @@ QueryResult::Ptr MaxQuery::execute() {
         );
     Database &db = Database::getInstance();
     try {
-        /*this->max.clear();*/
-        this->max.reserve(this->operands.size());
+        /*this->min.clear();*/
+        this->min.reserve(this->operands.size());
         auto &table = db[this->targetTable];
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
@@ -32,25 +30,25 @@ QueryResult::Ptr MaxQuery::execute() {
                         R"(Can not input KEY for comparison.)"_f
                 );
             } else {
-                this->max.emplace_back(make_pair(table.getFieldIndex(*it),Table::ValueTypeMin));
+                this->min.emplace_back(make_pair(table.getFieldIndex(*it),Table::ValueTypeMax));
             }
         }
         auto result = initCondition(table);
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
-                    for (auto iter = this->max.begin();iter!=this->max.end();++iter){
-                        if((*it)[(*iter).first] > (*iter).second) (*iter).second = (*it)[(*iter).first];
+                    for (auto iter = this->min.begin();iter!=this->min.end();++iter){
+                        if((*it)[(*iter).first] < (*iter).second) (*iter).second = (*it)[(*iter).first];
                     }
                 }
             }
         }
-
-        vector<Table::ValueType> max_result;
-        for (unsigned int i=0;i<this->max.size();i++){
-            max_result.emplace_back(this->max.at(i).second);
+        // todo: optimize the return result
+        vector<Table::ValueType> min_result;
+        for (unsigned int i=0;i<this->min.size();i++){
+            min_result.emplace_back(this->min.at(i).second);
         }
-        return make_unique<SuccessMsgResult>(max_result);
+        return make_unique<SuccessMsgResult>(min_result);
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
@@ -64,6 +62,6 @@ QueryResult::Ptr MaxQuery::execute() {
     }
 }
 
-std::string MaxQuery::toString() {
-    return "QUERY = MAX " + this->targetTable + "\"";
+std::string MinQuery::toString() {
+    return "QUERY = MIN " + this->targetTable + "\"";
 }
