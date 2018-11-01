@@ -6,6 +6,7 @@
 #include "../../db/Database.h"
 #include "../QueryResult.h"
 
+#include <iostream>
 #include <algorithm>
 
 constexpr const char *MaxQuery::qname;
@@ -47,7 +48,9 @@ QueryResult::Ptr MaxQuery::execute() {
         for (unsigned int i=0;i<this->max.size();i++){
             max_result.emplace_back(this->max.at(i).second);
         }
-        return make_unique<SuccessMsgResult>(max_result);
+        auto ptr = make_unique<SuccessMsgResult>(max_result);
+        cout << *ptr ;
+        return ptr;
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);

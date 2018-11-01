@@ -1,5 +1,5 @@
-LOAD ../db/t1.tbl;
-LOAD ../db/t2.tbl;
+LOAD t1.tbl;
+LOAD t2.tbl;
 INSERT ( r0 -14 17 2 20 23 19 7 -10 7 29 15 7 -6 12 14 -30 ) FROM t2;
 INSERT ( r1 8 2 -9 3 28 -16 29 -7 11 14 9 4 1 -2 -5 -24 ) FROM t2;
 INSERT ( r2 4 -2 -21 -28 13 4 7 17 -4 -27 -10 -7 6 -28 -28 -4 ) FROM t2;
@@ -106,7 +106,7 @@ MAX ( c1 c8 cC c5 c7 ) FROM t2;
 SUB ( cC cC cC ) FROM t2;
 MIN ( c1 c8 cC c5 c7 ) FROM t2;
 MAX ( c1 c8 cC c5 c7 ) FROM t2;
-LOAD ../db/t1.tbl;
+LOAD t1.tbl;
 DUMP t1 t1_dump.tbl;
 DUMP t2 t2_dump.tbl;
 QUIT;
