@@ -124,6 +124,16 @@ public:
         this->msg = R"(ANSWER = ?)"_f % number;
     }
 
+//    explicit AnswerMsgResult(int* number, size_t len) {
+//        //this->msg = R"(ANSWER = ?)"_f % number;
+//        std::stringstream ss;
+//        ss << "ANSWER = ( ";
+//        for (unsigned int i = 0; i < len ; i++) {
+//            ss << number[i] << " ";
+//        }
+//        ss << ")" << '\n';
+//    }
+
     explicit AnswerMsgResult(std::vector<int> results) {
         std::stringstream ss;
         ss << "ANSWER = ( ";
@@ -146,7 +156,7 @@ public:
         }
         this->msg = ss.str();
     }
-protected:
+    protected:
     std::ostream &output(std::ostream &os) const override {
         return os << msg << "\n";
     }

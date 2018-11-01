@@ -1,139 +1,41 @@
-cmake_minimum_required(VERSION 3.12)
-project(p2)
+cmake_minimum_required(VERSION 2.7)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -pedantic -Wno-unused-result -Wno-unused-parameter")
 
-include_directories(src/db)
-include_directories(src/query)
-include_directories(src/query/data)
-include_directories(src/query/management)
-include_directories(src/utils)
+set(SOURCE_FILES
+        db/Database.cpp db/Database.h
+        db/Table.cpp db/Table.h
 
-add_executable(p2
-        bin/lemondb
-        bin/lemondb-clang-6.0
-        bin/lemondb-gcc-7
-        db/fTable0.tbl
-        db/fTable1.tbl
-        db/fTable2.tbl
-        db/fTable3.tbl
-        db/fTable4.tbl
-        db/mTable0.tbl
-        db/mTable1.tbl
-        db/mTable10.tbl
-        db/mTable11.tbl
-        db/mTable12.tbl
-        db/mTable13.tbl
-        db/mTable14.tbl
-        db/mTable15.tbl
-        db/mTable16.tbl
-        db/mTable17.tbl
-        db/mTable18.tbl
-        db/mTable19.tbl
-        db/mTable2.tbl
-        db/mTable20.tbl
-        db/mTable21.tbl
-        db/mTable22.tbl
-        db/mTable23.tbl
-        db/mTable24.tbl
-        db/mTable25.tbl
-        db/mTable26.tbl
-        db/mTable27.tbl
-        db/mTable28.tbl
-        db/mTable29.tbl
-        db/mTable3.tbl
-        db/mTable30.tbl
-        db/mTable31.tbl
-        db/mTable32.tbl
-        db/mTable33.tbl
-        db/mTable34.tbl
-        db/mTable35.tbl
-        db/mTable36.tbl
-        db/mTable37.tbl
-        db/mTable38.tbl
-        db/mTable39.tbl
-        db/mTable4.tbl
-        db/mTable40.tbl
-        db/mTable41.tbl
-        db/mTable42.tbl
-        db/mTable43.tbl
-        db/mTable44.tbl
-        db/mTable45.tbl
-        db/mTable46.tbl
-        db/mTable47.tbl
-        db/mTable48.tbl
-        db/mTable49.tbl
-        db/mTable5.tbl
-        db/mTable6.tbl
-        db/mTable7.tbl
-        db/mTable8.tbl
-        db/mTable9.tbl
-        db/sTable0.tbl
-        db/t1.tbl
-        db/t2.tbl
-        db/tlarge.tbl
-        sample/few_insert_delete.query
-        sample/few_read.query
-        sample/few_read_dup.query
-        sample/few_read_update.query
-        sample/many_insert_delete.query
-        sample/many_read.query
-        sample/many_read_dup.query
-        sample/many_read_update.query
-        sample/single_insert_delete.query
-        sample/single_read.query
-        sample/single_read_dup.query
-        sample/single_read_update.query
-        sample/test.query
-        src/db/Database.cpp
-        src/db/Database.h
-        src/db/Table.cpp
-        src/db/Table.h
-        src/query/data/AddQuery.cpp
-        src/query/data/AddQuery.h
-        src/query/data/InsertQuery.cpp
-        src/query/data/InsertQuery.h
-        src/query/data/MaxQuery.cpp
-        src/query/data/MaxQuery.h
-        src/query/data/MinQuery.cpp
-        src/query/data/MinQuery.h
-        src/query/data/SubQuery.cpp
-        src/query/data/SubQuery.h
-        src/query/data/SwapQuery.cpp
-        src/query/data/SwapQuery.h
-        src/query/data/UpdateQuery.cpp
-        src/query/data/UpdateQuery.h
-        src/query/data/Duplicate.cpp
-        src/qeury/data/Duplicate.h
-        src/query/data/SumQuery.h
-        src/query/data.SumQuery.cpp
-        src/query/management/DropTableQuery.cpp
-        src/query/management/DropTableQuery.h
-        src/query/management/DumpTableQuery.cpp
-        src/query/management/DumpTableQuery.h
-        src/query/management/ListTableQuery.cpp
-        src/query/management/ListTableQuery.h
-        src/query/management/LoadTableQuery.cpp
-        src/query/management/LoadTableQuery.h
-        src/query/management/PrintTableQuery.cpp
-        src/query/management/PrintTableQuery.h
-        src/query/management/QuitQuery.cpp
-        src/query/management/QuitQuery.h
-        src/query/management/TruncateTableQuery.cpp
-        src/query/management/TruncateTableQuery.h
-        src/query/management/CopyTableQuery.cpp
-        src/query/management/CopyTableQuery.h
-        src/query/Query.cpp
-        src/query/Query.h
-        src/query/QueryBuilders.cpp
-        src/query/QueryBuilders.h
-        src/query/QueryParser.cpp
-        src/query/QueryParser.h
-        src/query/QueryResult.cpp
-        src/query/QueryResult.h
-        src/utils/formatter.h
-        src/utils/uexception.h
-        src/CMakeLists.txt
-        src/main.cpp
-        src/student.tbl)
+        utils/formatter.h utils/uexception.h
 
+        query/Query.cpp query/Query.h
+        query/QueryParser.cpp query/QueryParser.h
+        query/QueryResult.h query/QueryResult.cpp
+        query/QueryBuilders.cpp query/QueryBuilders.h
+
+        query/management/LoadTableQuery.cpp query/management/LoadTableQuery.h
+        query/management/DropTableQuery.cpp query/management/DropTableQuery.h
+        query/management/DumpTableQuery.cpp query/management/DumpTableQuery.h
+        query/management/ListTableQuery.cpp query/management/ListTableQuery.h
+        query/management/QuitQuery.cpp query/management/QuitQuery.h
+        query/management/PrintTableQuery.cpp query/management/PrintTableQuery.h
+        query/management/CopyTableQuery.cpp query/management/CopyTableQuery.h
+
+        query/data/InsertQuery.cpp query/data/InsertQuery.h
+        query/data/UpdateQuery.cpp query/data/UpdateQuery.h
+        query/data/MaxQuery.h query/data/MaxQuery.cpp
+        query/data/MinQuery.cpp query/data/MinQuery.h
+        query/data/SwapQuery.cpp query/data/SwapQuery.h
+        query/management/TruncateTableQuery.cpp query/management/TruncateTableQuery.h
+        query/data/AddQuery.cpp query/data/AddQuery.h
+        query/data/SubQuery.cpp query/data/SubQuery.h
+        query/data/SelectQuery.cpp query/data/SelectQuery.h
+        query/data/DeleteQuery.cpp query/data/DeleteQuery.h
+        query/data/CountQuery.cpp query/data/CountQuery.h
+        query/data/DuplicateQuery.h query/data/DuplicateQuery.cpp
+        query/data/SumQuery.cpp query/data/SumQuery.h
+        )
+
+add_executable(lemondb main.cpp ${SOURCE_FILES})
+target_link_libraries(lemondb pthread)

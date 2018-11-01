@@ -6,9 +6,11 @@
 #define PROJECT_SUMQUERY_H
 
 #include "../Query.h"
+#include <vector>
 
 class SumQuery : public ComplexQuery {
     static constexpr const char *qname = "SUM";
+    std::vector<std::pair<Table::FieldIndex, Table::ValueType> > field_sum;
 public:
     using ComplexQuery::ComplexQuery;
 

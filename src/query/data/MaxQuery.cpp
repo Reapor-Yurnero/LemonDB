@@ -26,7 +26,7 @@ QueryResult::Ptr MaxQuery::execute() {
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(
-                        R"(Can not input KEY for comparison.)"_f
+                        R"(Can not input KEY for MAX.)"_f
                 );
             } else {
                 this->max.emplace_back(make_pair(table.getFieldIndex(*it),Table::ValueTypeMin));
