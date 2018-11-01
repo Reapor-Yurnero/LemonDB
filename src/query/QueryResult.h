@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 
 class QueryResult {
 public:
@@ -120,16 +121,29 @@ public:
     bool display() override { return true; }
 
     explicit AnswerMsgResult(const int number) {
-        this->msg = R"(Answer = ?.)"_f % number;
+        this->msg = R"(ANSWER = ?)"_f % number;
     }
 
     explicit AnswerMsgResult(std::vector<int> results) {
         std::stringstream ss;
-        ss << "Answer = ( ";
+        ss << "ANSWER = ( ";
         for (auto result : results) {
             ss << result << " ";
         }
         ss << ") ";
+        this->msg = ss.str();
+    }
+
+    explicit AnswerMsgResult(std::map<std::string, std::vector<int> > rowData){
+        std::stringstream ss;
+        for (auto it = rowData.begin(); it != rowData.end(); ++it){
+            if(it != rowData.begin())
+                ss << "\n";
+            ss << "( " << it->first << " ";
+            for(auto datum_it = it->second.begin(); datum_it != it->second.end(); ++datum_it)
+                ss << *datum_it << " ";
+            ss << ")";
+        }
         this->msg = ss.str();
     }
 protected:
