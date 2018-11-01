@@ -39,13 +39,10 @@ QueryResult::Ptr DuplicateQuery::execute() {
 //                        cout << it->get(i) << endl;
                     }
 //                    cout << "hello" << endl;
-                    string key = it->key() + "_copy";
-                    if (table[key] == nullptr)
-                    {
-//                        cout << "new key is: " << key << endl;
-                        table.insertByIndex(key, move(data));
-                        counter++;
-                    }
+                    string key = it->key();
+                    while(table[key] != nullptr) key = key + "_copy";
+                    table.insertByIndex(key, move(data));
+                    counter++;
                 }
 //                cout << "tmp = " << tmp << endl;
                 tmp++;
