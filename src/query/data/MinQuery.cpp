@@ -50,9 +50,7 @@ QueryResult::Ptr MinQuery::execute() {
             min_result.emplace_back(this->min.at(i).second);
         }
 
-        auto ptr = make_unique<SuccessMsgResult>(min_result);
-        cout << *ptr ;
-        return ptr;
+        return make_unique<AnswerMsgResult>(min_result);
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);

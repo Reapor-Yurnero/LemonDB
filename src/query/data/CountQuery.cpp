@@ -27,7 +27,7 @@ QueryResult::Ptr CountQuery::execute() {
                     ++counter;
             }
         }
-        return make_unique<SuccessMsgResult>(counter);
+        return make_unique<AnswerMsgResult>(counter);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
     } catch (const IllFormedQueryCondition &e) {

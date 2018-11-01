@@ -114,6 +114,30 @@ protected:
     }
 };
 
+class AnswerMsgResult : public SuceededQueryResult {
+    std::string msg;
+public:
+    bool display() override { return true; }
+
+    explicit AnswerMsgResult(const int number) {
+        this->msg = R"(Answer = ?.)"_f % number;
+    }
+
+    explicit AnswerMsgResult(std::vector<int> results) {
+        std::stringstream ss;
+        ss << "Answer = ( ";
+        for (auto result : results) {
+            ss << result << " ";
+        }
+        ss << ") ";
+        this->msg = ss.str();
+    }
+protected:
+    std::ostream &output(std::ostream &os) const override {
+        return os << msg << "\n";
+    }
+};
+
 class RecordCountResult : public SuceededQueryResult {
     const int affectedRows;
 public:
