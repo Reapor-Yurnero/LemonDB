@@ -12,6 +12,7 @@
 #include "management/QuitQuery.h"
 #include "management/PrintTableQuery.h"
 #include "management/TruncateTableQuery.h"
+#include "management/CopyTableQuery.h"
 
 #include "data/InsertQuery.h"
 #include "data/UpdateQuery.h"
@@ -23,6 +24,8 @@
 #include "data/SelectQuery.h"
 #include "data/DeleteQuery.h"
 #include "data/CountQuery.h"
+#include "data/DuplicateQuery.h"
+#include "data/SumQuery.h"
 
 #include <iomanip>
 #include <iostream>
@@ -66,8 +69,9 @@ Query::Ptr ManageTableQueryBuilder::tryExtractQuery
             );
         }
         if (query.token.front() == "COPYTABLE")
-            return std::make_unique<NopQuery>(); // Not implemented
-            //return std::make_unique<CopyTableQuery>(query.token[1], query.token[2]);
+            return std::make_unique<CopyTableQuery>(
+                    query.token[1], query.token[2]
+            );
     }
     return this->nextBuilder->tryExtractQuery(query);
 }
@@ -168,17 +172,15 @@ Query::Ptr ComplexQueryBuilder::tryExtractQuery(TokenizedQueryString &query) {
         return std::make_unique<DeleteQuery>(
                 this->targetTable, this->operandToken, this->conditionToken);
     if (operation == "DUPLICATE")
-        return std::make_unique<NopQuery>(); // Not implemented
-        /*return std::make_unique<DuplicateQuery>(
-                this->targetTable, this->operandToken, this->conditionToken);*/
+        return std::make_unique<DuplicateQuery>(
+                this->targetTable, this->operandToken, this->conditionToken);
     if (operation == "COUNT")
         //return std::make_unique<NopQuery>(); // Not implemented
         return std::make_unique<CountQuery>(
                 this->targetTable, this->operandToken, this->conditionToken);
     if (operation == "SUM")
-        return std::make_unique<NopQuery>(); // Not implemented
-        /*return std::make_unique<SumQuery>(
-                this->targetTable, this->operandToken, this->conditionToken);*/
+        return std::make_unique<SumQuery>(
+                this->targetTable, this->operandToken, this->conditionToken);
     if (operation == "MIN")
         return std::make_unique<MinQuery>(
                 this->targetTable, this->operandToken, this->conditionToken);

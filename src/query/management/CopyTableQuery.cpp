@@ -20,8 +20,6 @@ QueryResult::Ptr CopyTableQuery::execute() {
         std::string tableName = this->targetTable;
         auto new_table = make_unique<Table>(new_table_tmp, db[targetTable]);
         db.registerTable(move(new_table));
-//        db.printAllTable();
-
         return make_unique<SuccessMsgResult>(0);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());
