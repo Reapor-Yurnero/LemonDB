@@ -22,7 +22,7 @@ QueryResult::Ptr SumQuery::execute() {
     try {
         auto &table = db[this->targetTable];
         int *sum = new int [this->operands.size()];
-        cout << "operands size is: " << this->operands.size() << endl;
+//        cout << "operands size is: " << this->operands.size() << endl;
         for (unsigned int i = 0; i < this->operands.size(); i++) {
             int sum_tmp = 0;
             for (auto it = table.begin(); it != table.end(); it++) {
