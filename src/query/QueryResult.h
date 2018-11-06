@@ -144,14 +144,14 @@ public:
         this->msg = ss.str();
     }
 
-    explicit AnswerMsgResult(std::map<std::string, std::vector<int> > rowData){
+    explicit AnswerMsgResult(std::map<std::string, std::vector<int *> > rowData){
         std::stringstream ss;
         for (auto it = rowData.begin(); it != rowData.end(); ++it){
             if(it != rowData.begin())
                 ss << "\n";
             ss << "( " << it->first << " ";
             for(auto datum_it = it->second.begin(); datum_it != it->second.end(); ++datum_it)
-                ss << *datum_it << " ";
+                ss << *(*datum_it) << " ";
             ss << ")";
         }
         this->msg = ss.str();
