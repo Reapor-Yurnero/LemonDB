@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
 
 struct {
     std::string listen;
@@ -81,6 +82,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     } else if (parsedArgs.threads == 0) {
         // @TODO Auto detect the thread num
+        parsedArgs.threads = std::thread::hardware_concurrency();
         std::cerr << "lemondb: info: auto detect thread num" << std::endl;
     } else {
         std::cerr << "lemondb: info: running in " << parsedArgs.threads << " threads" << std::endl;
