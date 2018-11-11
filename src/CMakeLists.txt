@@ -35,7 +35,7 @@ set(SOURCE_FILES
         query/data/CountQuery.cpp query/data/CountQuery.h
         query/data/DuplicateQuery.h query/data/DuplicateQuery.cpp
         query/data/SumQuery.cpp query/data/SumQuery.h
-        )
+        threadpool/ThreadPool.cpp threadpool/ThreadPool.h)
 
 add_executable(lemondb main.cpp ${SOURCE_FILES})
 target_link_libraries(lemondb pthread)

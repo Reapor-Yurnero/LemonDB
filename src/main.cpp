@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <thread>
+#include "threadpool/ThreadPool.h"
 
 struct {
     std::string listen;
@@ -81,12 +81,15 @@ int main(int argc, char *argv[]) {
         std::cerr << "lemondb: error: threads num can not be negative value " << parsedArgs.threads << std::endl;
         exit(-1);
     } else if (parsedArgs.threads == 0) {
-        // @TODO Auto detect the thread num
         parsedArgs.threads = std::thread::hardware_concurrency();
         std::cerr << "lemondb: info: auto detect thread num" << std::endl;
     } else {
         std::cerr << "lemondb: info: running in " << parsedArgs.threads << " threads" << std::endl;
     }
+
+    //Start the thread pool
+    ThreadPool pool(parsedArgs.threads);
+    pool.start();
 
 
     QueryParser p;
@@ -96,6 +99,15 @@ int main(int argc, char *argv[]) {
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Complex)>());
 
     size_t counter = 0;
+
+    /*
+     * In while loop, call pool.addTask(std::bind(func, arguments))
+     *
+     * void func(arguments) {
+     *      ...
+     *      real task such as Query operators
+     * }
+     */
 
     while (is) {
         try {
