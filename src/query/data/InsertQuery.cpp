@@ -23,10 +23,15 @@ QueryResult::Ptr InsertQuery::execute() {
         auto &key = this->operands.front();
         vector<Table::ValueType> data;
         data.reserve(this->operands.size() - 1);
-        for (auto it = ++this->operands.begin(); it != this->operands.end(); ++it) {
-            data.emplace_back(strtol(it->c_str(), nullptr, 10));
+        {
+            if (modify()) {
+                std::unique_lock<std::mutex> modifyLocker(table.modifyLock);
+            }
+            for (auto it = ++this->operands.begin(); it != this->operands.end(); ++it) {
+                data.emplace_back(strtol(it->c_str(), nullptr, 10));
+            }
+            table.insertByIndex(key, move(data));
         }
-        table.insertByIndex(key, move(data));
         return std::make_unique<SuccessMsgResult>(qname, targetTable);
     }
     catch (const TableNameNotFound &e) {

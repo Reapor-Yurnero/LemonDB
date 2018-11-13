@@ -89,6 +89,8 @@ public:
      */
     bool testKeyCondition(Table &table, std::function<void(bool, Table::Object::Ptr &&)> function);
 
+    virtual bool modify() = 0;
+
 
     ComplexQuery(std::string targetTable,
                  std::vector<std::string> operands,

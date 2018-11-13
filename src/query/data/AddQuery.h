@@ -17,6 +17,8 @@ public:
     QueryResult::Ptr execute() override;
 
     std::string toString() override;
+
+    bool modify() override { return false; }
 };
 
 #endif //PROJECT_ADDQUERY_H

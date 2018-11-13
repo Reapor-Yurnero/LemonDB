@@ -16,6 +16,8 @@ public:
     QueryResult::Ptr execute() override;
 
     std::string toString() override;
+
+    bool modify() override { return false; }
 };
 
 

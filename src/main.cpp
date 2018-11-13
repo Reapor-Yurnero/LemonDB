@@ -174,8 +174,13 @@ int main(int argc, char *argv[]) {
     }
     */
     while(is){
-        std::string queryStr = extractQueryString(is);
-        pool.addTask(std::bind(queryJob, std::move(queryStr), counter));
+        try {
+            std::string queryStr = extractQueryString(is);
+            pool.addTask(std::bind(queryJob, std::move(queryStr), std::ref(counter)));
+        }catch (const std::ios_base::failure& e) {
+            // End of input
+            break;
+        }
     }
 
     return 0;
