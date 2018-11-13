@@ -46,7 +46,7 @@ std::string extractQueryString(std::istream &is) {
     } while (true);
 }
 
-void queryJob(std::string queryStr, size_t counter) {
+void queryJob(std::string queryStr, size_t &counter) {
     QueryParser p;
 
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Debug)>());
@@ -54,7 +54,7 @@ void queryJob(std::string queryStr, size_t counter) {
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Complex)>());
 
     try {
-        Query::Ptr query = p.parseQuery(queryStr);
+        Query::Ptr query = p.parseQuery(std::move(queryStr));
         QueryResult::Ptr result = query->execute();
         std::cout << ++counter << "\n";
         if (result->success()) {
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
     */
     while(is){
         std::string queryStr = extractQueryString(is);
-        pool.addTask(std::bind(queryJob, queryStr, counter));
+        pool.addTask(std::bind(queryJob, std::move(queryStr), counter));
     }
 
     return 0;
