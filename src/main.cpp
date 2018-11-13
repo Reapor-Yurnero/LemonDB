@@ -46,6 +46,38 @@ std::string extractQueryString(std::istream &is) {
     } while (true);
 }
 
+void queryJob(std::string queryStr, size_t counter) {
+    QueryParser p;
+
+    p.registerQueryBuilder(std::make_unique<QueryBuilder(Debug)>());
+    p.registerQueryBuilder(std::make_unique<QueryBuilder(ManageTable)>());
+    p.registerQueryBuilder(std::make_unique<QueryBuilder(Complex)>());
+
+    try {
+        Query::Ptr query = p.parseQuery(queryStr);
+        QueryResult::Ptr result = query->execute();
+        std::cout << ++counter << "\n";
+        if (result->success()) {
+            if (result->display()) {
+                std::cout << *result;
+                //std::cout.flush();
+            } else {
+#ifndef NDEBUG
+                std::cout.flush();
+                std::cerr << *result;
+#endif
+                //std::cout.flush();
+            }
+        } else {
+            std::cout.flush();
+            std::cerr << "QUERY FAILED:\n\t" << *result;
+        }
+    } catch (const std::exception &e) {
+        std::cout.flush();
+        std::cerr << e.what() << std::endl;
+    }
+}
+
 int main(int argc, char *argv[]) {
     // Assume only C++ style I/O is used in lemondb
     // Do not use printf/fprintf in <cstdio> with this line
@@ -91,13 +123,13 @@ int main(int argc, char *argv[]) {
     ThreadPool pool(parsedArgs.threads);
     pool.start();
 
-
+/*
     QueryParser p;
 
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Debug)>());
     p.registerQueryBuilder(std::make_unique<QueryBuilder(ManageTable)>());
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Complex)>());
-
+*/
     size_t counter = 0;
 
     /*
@@ -108,7 +140,7 @@ int main(int argc, char *argv[]) {
      *      real task such as Query operators
      * }
      */
-
+/*
     while (is) {
         try {
             // A very standard REPL
@@ -139,6 +171,12 @@ int main(int argc, char *argv[]) {
             std::cout.flush();
             std::cerr << e.what() << std::endl;
         }
+    }
+    */
+    while(is){
+        std::string queryStr = extractQueryString(is);
+        pool.addTask(std::bind(queryJob, queryStr, counter));
+        counter++;
     }
 
     return 0;
