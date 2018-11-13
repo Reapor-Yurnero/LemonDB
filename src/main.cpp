@@ -176,7 +176,6 @@ int main(int argc, char *argv[]) {
     while(is){
         std::string queryStr = extractQueryString(is);
         pool.addTask(std::bind(queryJob, queryStr, counter));
-        counter++;
     }
 
     return 0;
