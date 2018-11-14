@@ -17,7 +17,7 @@ public:
 
     std::string toString() override;
 
-    bool modify() override { return false; }
+    //bool modify() override { return false; }
 };
 
 

@@ -35,19 +35,14 @@ QueryResult::Ptr SwapQuery::execute() {
                 mark++;
             }
         }
-        {
-            if (modify()) {
-                std::unique_lock<std::mutex> modifyLocker(table.modifyLock);
-            }
-            auto result = initCondition(table);
-            if (result.second) {
-                for (auto it = table.begin(); it != table.end(); ++it) {
-                    if (this->evalCondition(*it)) {
-                        Table::ValueType temp = (*it)[swapA];
-                        (*it)[swapA] = (*it)[swapB];
-                        (*it)[swapB] = temp;
-                        ++counter;
-                    }
+        auto result = initCondition(table);
+        if (result.second) {
+            for (auto it = table.begin(); it != table.end(); ++it) {
+                if (this->evalCondition(*it)) {
+                    Table::ValueType temp = (*it)[swapA];
+                    (*it)[swapA] = (*it)[swapB];
+                    (*it)[swapB] = temp;
+                    ++counter;
                 }
             }
         }

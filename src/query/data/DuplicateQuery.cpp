@@ -22,35 +22,30 @@ QueryResult::Ptr DuplicateQuery::execute() {
     Table::SizeType  counter = 0;
     try{
         auto &table = db[this->targetTable];
-        {
-            if (modify()) {
-                std::unique_lock<std::mutex> modifyLocker(table.modifyLock);
-            }
-            auto result = initCondition(table);
+        auto result = initCondition(table);
 //        cout << "first is: " << result.first << endl;
 //        cout << "second is: " << result.second << endl;
 //        cout << "table field size is: " << table.field().size() << endl;
 //        cout << "table size is: " << table.size() << endl;
-            if (result.second) {
-                unsigned long tmp = 0;
-                unsigned long current_size = table.size();
-                for (auto it = table.begin(); it != table.end() && tmp < current_size; it++) {
-                    if (this->evalCondition(*it)) {
-                        vector<Table::ValueType> data;
-                        data.reserve(table.field().size());
-                        for (unsigned long i = 0; i < table.field().size(); i++) {
-                            data.emplace_back(it->get(i));
+        if (result.second) {
+            unsigned long tmp = 0;
+            unsigned long current_size = table.size();
+            for (auto it = table.begin(); it != table.end() && tmp < current_size; it++) {
+                if (this->evalCondition(*it)) {
+                    vector<Table::ValueType> data;
+                    data.reserve(table.field().size());
+                    for (unsigned long i = 0; i < table.field().size(); i++) {
+                        data.emplace_back(it->get(i));
 //                        cout << it->get(i) << endl;
-                        }
-//                    cout << "hello" << endl;
-                        string key = it->key();
-                        while (table[key] != nullptr) key = key + "_copy";
-                        table.insertByIndex(key, move(data));
-                        counter++;
                     }
-//                cout << "tmp = " << tmp << endl;
-                    tmp++;
+//                    cout << "hello" << endl;
+                    string key = it->key();
+                    while (table[key] != nullptr) key = key + "_copy";
+                    table.insertByIndex(key, move(data));
+                    counter++;
                 }
+//                cout << "tmp = " << tmp << endl;
+                tmp++;
             }
         }
         return make_unique<RecordCountResult>(counter);

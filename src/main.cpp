@@ -45,7 +45,7 @@ std::string extractQueryString(std::istream &is) {
         buf.push_back((char) ch);
     } while (true);
 }
-
+/*
 void queryJob(std::string queryStr, size_t &counter) {
     QueryParser p;
 
@@ -77,7 +77,7 @@ void queryJob(std::string queryStr, size_t &counter) {
         std::cerr << e.what() << std::endl;
     }
 }
-
+*/
 int main(int argc, char *argv[]) {
     // Assume only C++ style I/O is used in lemondb
     // Do not use printf/fprintf in <cstdio> with this line
@@ -123,13 +123,13 @@ int main(int argc, char *argv[]) {
     ThreadPool pool(parsedArgs.threads);
     pool.start();
 
-/*
+
     QueryParser p;
 
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Debug)>());
     p.registerQueryBuilder(std::make_unique<QueryBuilder(ManageTable)>());
     p.registerQueryBuilder(std::make_unique<QueryBuilder(Complex)>());
-*/
+
     size_t counter = 0;
 
     /*
@@ -140,7 +140,6 @@ int main(int argc, char *argv[]) {
      *      real task such as Query operators
      * }
      */
-/*
     while (is) {
         try {
             // A very standard REPL
@@ -172,7 +171,7 @@ int main(int argc, char *argv[]) {
             std::cerr << e.what() << std::endl;
         }
     }
-    */
+    /*
     while(is){
         try {
             std::string queryStr = extractQueryString(is);
@@ -182,6 +181,6 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-
+*/
     return 0;
 }

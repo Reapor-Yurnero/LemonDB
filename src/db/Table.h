@@ -14,8 +14,8 @@
 #include <vector>
 #include <unordered_map>
 #include <utility>
-#include <mutex>
-#include <condition_variable>
+//#include <mutex>
+//#include <condition_variable>
 
 
 #define _DBTABLE_ACCESS_WITH_NAME_EXCEPTION(field)\
@@ -51,8 +51,8 @@ public:
     static constexpr const ValueType ValueTypeMin = std::numeric_limits<ValueType>::min();
     typedef size_t SizeType;
 
-    std::mutex modifyLock;
-    std::condition_variable modifyCond; //Used to maintain correct modified version for different time query
+    //std::mutex modifyLock;
+    //std::condition_variable modifyCond; //Used to maintain correct modified version for different time query
 
 private:
     /** A row in the table */

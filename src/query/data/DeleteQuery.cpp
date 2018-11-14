@@ -21,19 +21,14 @@ QueryResult::Ptr DeleteQuery::execute() {
     Table::SizeType counter = 0;
     try{
         auto &table = db[this->targetTable];
-        {
-            if (modify()) {
-                std::unique_lock<std::mutex> modifyLocker(table.modifyLock);
-            }
-            auto result = initCondition(table);
-            if (result.second) {
-                for (auto it = table.begin(); it != table.end();) {
-                    if (this->evalCondition(*it)) {
-                        it->deleteRow();
-                        ++counter;
-                    } else
-                        ++it;
-                }
+        auto result = initCondition(table);
+        if (result.second) {
+            for (auto it = table.begin(); it != table.end();) {
+                if (this->evalCondition(*it)) {
+                    it->deleteRow();
+                    ++counter;
+                } else
+                    ++it;
             }
         }
         return make_unique<RecordCountResult>(counter);

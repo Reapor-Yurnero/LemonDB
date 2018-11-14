@@ -24,21 +24,16 @@ QueryResult::Ptr UpdateQuery::execute() {
             this->fieldId = table.getFieldIndex(this->operands[0]);
             this->fieldValue = (Table::ValueType) strtol(this->operands[1].c_str(), nullptr, 10);
         }
-        {
-            if (modify()) {
-                std::unique_lock<std::mutex> modifyLocker(table.modifyLock);
-            }
-            auto result = initCondition(table);
-            if (result.second) {
-                for (auto it = table.begin(); it != table.end(); ++it) {
-                    if (this->evalCondition(*it)) {
-                        if (this->keyValue.empty()) {
-                            (*it)[this->fieldId] = this->fieldValue;
-                        } else {
-                            it->setKey(this->keyValue);
-                        }
-                        ++counter;
+        auto result = initCondition(table);
+        if (result.second) {
+            for (auto it = table.begin(); it != table.end(); ++it) {
+                if (this->evalCondition(*it)) {
+                    if (this->keyValue.empty()) {
+                        (*it)[this->fieldId] = this->fieldValue;
+                    } else {
+                        it->setKey(this->keyValue);
                     }
+                    ++counter;
                 }
             }
         }

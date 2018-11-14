@@ -17,7 +17,7 @@ public:
 
     std::string toString() override;
 
-    bool modify() override { return true; }
+    //bool modify() override { return true; }
 };
 
 #endif //PROJECT_SWAPQUERY_H
