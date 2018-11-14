@@ -4,6 +4,8 @@
 
 #include "ThreadPool.h"
 
+std::unique_ptr<ThreadPool> ThreadPool::threadpool = nullptr;
+
 ThreadPool::ThreadPool(long num): thread_num(num), isrunning(false), lock(), cond() {}
 
 ThreadPool::~ThreadPool() {
@@ -64,4 +66,16 @@ void ThreadPool::job() {
         if(task)
             task();
     }
+}
+
+ThreadPool &ThreadPool::initPool(long num) {
+    if(ThreadPool::threadpool == nullptr) {
+        threadpool = std::unique_ptr<ThreadPool>(new ThreadPool(num));
+        threadpool->start();
+    }
+    return *threadpool;
+}
+
+ThreadPool &ThreadPool::getPool() {
+    return *threadpool;
 }

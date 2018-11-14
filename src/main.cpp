@@ -119,9 +119,9 @@ int main(int argc, char *argv[]) {
         std::cerr << "lemondb: info: running in " << parsedArgs.threads << " threads" << std::endl;
     }
 
-    //Start the thread pool
-    ThreadPool pool(parsedArgs.threads);
-    pool.start();
+    //Generate thread pool instance and start
+    ThreadPool &pool = ThreadPool::initPool(parsedArgs.threads);
+    pool.stop();
 
 
     QueryParser p;
