@@ -120,8 +120,8 @@ int main(int argc, char *argv[]) {
     }
 
     //Generate thread pool instance and start
-    ThreadPool &pool = ThreadPool::initPool(parsedArgs.threads);
-    pool.stop();
+    //ThreadPool &pool = ThreadPool::initPool(parsedArgs.threads);
+    //pool.stop();
 
 
     QueryParser p;

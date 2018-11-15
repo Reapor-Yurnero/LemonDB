@@ -14,7 +14,7 @@
 #include <vector>
 #include <unordered_map>
 #include <utility>
-//#include <mutex>
+#include <mutex>
 //#include <condition_variable>
 
 
@@ -94,6 +94,10 @@ private:
     std::vector<Datum> data;
     /** Used to keep the keys unique and provide O(1) access with key */
     std::unordered_map<KeyType, SizeType> keyMap;
+    /** Buffered modifid data are saved in a cache, which is unsorted */
+    std::vector<Datum> cache;
+    /** Cache lock */
+    std::mutex cacheLock;
 
     /** The name of table */
     std::string tableName;
@@ -352,6 +356,22 @@ public:
         data.clear();
         keyMap.clear();
         return result;
+    }
+
+    void erase_marked(const Iterator &iterator){
+        std::unique_lock<std::mutex> cacheLocker(cacheLock);
+        keyMap.erase(iterator.it->key);
+    }
+
+    void loadToCache(Iterator &iterator){
+        std::unique_lock<std::mutex> cacheLocker(cacheLock);
+        keyMap.at(iterator.it->key) = cache.size();
+        cache.emplace_back(std::move(*iterator.it));
+    }
+
+    void updateByCache(){
+        std::swap(data, cache);
+        cache.clear();
     }
 
     /**

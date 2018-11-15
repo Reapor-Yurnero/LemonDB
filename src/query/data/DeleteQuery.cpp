@@ -23,14 +23,16 @@ QueryResult::Ptr DeleteQuery::execute() {
         auto &table = db[this->targetTable];
         auto result = initCondition(table);
         if (result.second) {
-            for (auto it = table.begin(); it != table.end();) {
+            for (auto it = table.begin(); it != table.end();++it) {
                 if (this->evalCondition(*it)) {
-                    it->deleteRow();
+                    table.erase_marked(it);
                     ++counter;
-                } else
-                    ++it;
+                } else{
+                    table.loadToCache(it);
+                }
             }
         }
+        table.updateByCache();
         return make_unique<RecordCountResult>(counter);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
