@@ -369,6 +369,23 @@ public:
         cache.emplace_back(std::move(*iterator.it));
     }
 
+    bool copyToCache(Iterator &iterator){
+        auto key = iterator->key() + "_copy";
+        std::unique_lock<std::mutex> cacheLocker(cacheLock);
+        if(keyMap.find(key) != keyMap.end())
+            return false;
+        cache.emplace_back(key, iterator->it->datum);
+        return true;
+    }
+
+    void appendByCache(){
+        for(auto it = cache.begin();it != cache.end();++it){
+            keyMap.emplace(it->key, data.size());
+            data.emplace_back(std::move(*it));
+        }
+        cache.clear();
+    }
+
     void updateByCache(){
         std::swap(data, cache);
         cache.clear();

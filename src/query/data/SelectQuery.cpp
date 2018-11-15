@@ -30,8 +30,8 @@ QueryResult::Ptr SelectQuery::execute() {
         if (result.second) {
             for (auto table_it = table.begin(); table_it != table.end(); ++table_it) {
                 if (this->evalCondition(*table_it)) {
-                    // todo: optimize tmp vector
                     vector<Table::ValueType *> datum;
+                    datum.reserve(table.field().size());
                     for (auto field_it = ++this->operands.begin(); field_it != this->operands.end(); ++field_it) {
                         datum.emplace_back(&((*table_it)[*field_it]));
                     }

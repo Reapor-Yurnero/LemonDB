@@ -21,7 +21,12 @@ QueryResult::Ptr DeleteQuery::execute() {
     Table::SizeType counter = 0;
     try{
         auto &table = db[this->targetTable];
+        if(condition.empty()){
+            counter = table.clear();
+            return make_unique<RecordCountResult>(counter);
+        }
         auto result = initCondition(table);
+
         if (result.second) {
             for (auto it = table.begin(); it != table.end();++it) {
                 if (this->evalCondition(*it)) {
@@ -31,8 +36,19 @@ QueryResult::Ptr DeleteQuery::execute() {
                     table.loadToCache(it);
                 }
             }
+            table.updateByCache();
         }
-        table.updateByCache();
+/*
+        if (result.second) {
+            for (auto it = table.begin(); it != table.end();) {
+                if (this->evalCondition(*it)) {
+                    it->deleteRow();
+                    ++counter;
+                } else
+                    ++it;
+            }
+        }
+*/
         return make_unique<RecordCountResult>(counter);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
