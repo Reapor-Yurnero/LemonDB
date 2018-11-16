@@ -5,6 +5,7 @@
 #ifndef PROJECT_THREADPOOL_H
 #define PROJECT_THREADPOOL_H
 
+
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -12,6 +13,7 @@
 #include <vector>
 #include <deque>
 #include <functional>
+
 
 
 class ThreadPool {
@@ -38,6 +40,8 @@ public:
 
     void addTask(Task &&task);
 
+    void waitfinish();
+
     ~ThreadPool();
 
     static ThreadPool &initPool (long num);
@@ -47,15 +51,17 @@ public:
      */
     static ThreadPool &getPool ();
 
-
 private:
     long thread_num;
+    unsigned int running_count = 0;
     bool isrunning;
-    std::mutex lock;
+    std::mutex lock, count_lock;
     std::condition_variable cond;
     //todo: Use pointer in taskset;
     std::deque<Task> taskset;
     std::vector<std::shared_ptr<std::thread>> pool;
+
+    static std::unique_ptr<ThreadPool> sq_pool;
 
     void job();
 };

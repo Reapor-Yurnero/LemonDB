@@ -9,9 +9,13 @@
 
 class MinQuery : public ComplexQuery {
     static constexpr const char *qname = "MIN";
-    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> min;
+
 public:
     using ComplexQuery::ComplexQuery;
+
+    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> min;
+
+    std::mutex g_mutex;
 
     QueryResult::Ptr execute() override;
 

@@ -40,6 +40,10 @@ void ThreadPool::addTask(const ThreadPool::Task &task) {
         std::unique_lock<std::mutex> locker(lock);
         taskset.emplace_back(task);
         cond.notify_one();
+        {
+            std::unique_lock<std::mutex> lock(count_lock);
+            this->running_count++;
+        }
     }
 }
 
@@ -48,6 +52,10 @@ void ThreadPool::addTask(ThreadPool::Task &&task) {
         std::unique_lock<std::mutex> locker(lock);
         taskset.emplace_back(std::move(task));
         cond.notify_one();
+        {
+            std::unique_lock<std::mutex> lock(count_lock);
+            this->running_count++;
+        }
     }
 }
 
@@ -64,7 +72,13 @@ void ThreadPool::job() {
             }
         }
         if(task)
+        {
             task();
+            {
+                std::unique_lock<std::mutex> lock(count_lock);
+                this->running_count--;
+            }
+        }
     }
 }
 
@@ -78,4 +92,12 @@ ThreadPool &ThreadPool::initPool(long num) {
 
 ThreadPool &ThreadPool::getPool() {
     return *threadpool;
+}
+
+void ThreadPool::waitfinish() {
+    while(isrunning)
+    {
+        std::unique_lock<std::mutex> locker(count_lock);
+        if(this->running_count==0) return;
+    }
 }

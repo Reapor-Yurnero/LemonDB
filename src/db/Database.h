@@ -5,10 +5,12 @@
 #ifndef PROJECT_DB_H
 #define PROJECT_DB_H
 
+#include "../threadpool/ThreadPool.h"
+#include "Table.h"
+
 #include <memory>
 #include <unordered_map>
 
-#include "Table.h"
 
 class Database {
 private:
@@ -31,6 +33,10 @@ private:
      * The default constructor is made private for singleton instance
      */
     Database() = default;
+
+    /**
+     * The threadpool for single query
+     */
 
 public:
     void testDuplicate(const std::string &tableName);
@@ -71,6 +77,7 @@ public:
      * @return reference of loaded table
      */
     Table &loadTableFromStream(std::istream &is, std::string source = "");
+
 
     void exit();
 };

@@ -12,6 +12,30 @@
 
 constexpr const char *MinQuery::qname;
 
+
+void find_local_min(MinQuery* const query, Table::Iterator begin, Table::Iterator end,
+                    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_min){
+
+    for (auto it = begin; it != end; ++it) {
+        if (query->evalCondition(*it)) {
+            for (auto iter=local_min.begin();iter!=local_min.end();++iter){
+                if( (*it)[(*iter).first] < (*iter).second )
+                    (*iter).second = (*it)[(*iter).first];
+            }
+        }
+    }
+
+
+    {
+        std::unique_lock<std::mutex> lock(query->g_mutex);
+        for (size_t i=0;i<local_min.size();i++){
+            if(local_min[i].second < query->min[i].second)
+                std::swap(local_min[i].second, query->min[i].second);
+        }
+    }
+}
+
+
 QueryResult::Ptr MinQuery::execute() {
     // todo: optimize the data structure for comparison
     using namespace std;
@@ -21,6 +45,7 @@ QueryResult::Ptr MinQuery::execute() {
                 "No operand (? operands)."_f % operands.size()
         );
     Database &db = Database::getInstance();
+    ThreadPool &threadPool = ThreadPool::getPool();
     try {
         /*this->min.clear();*/
         this->min.reserve(this->operands.size());
@@ -35,6 +60,8 @@ QueryResult::Ptr MinQuery::execute() {
             }
         }
         auto result = initCondition(table);
+
+        /*
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
@@ -44,6 +71,34 @@ QueryResult::Ptr MinQuery::execute() {
                 }
             }
         }
+        */
+
+        if (result.second) {
+            auto table_size = table.size();
+            auto thread_num = std::thread::hardware_concurrency()-1;
+
+            //calculate the corresponding page number
+            if(table_size<1000) thread_num =1;
+            size_t page_size = (table_size - 1)/thread_num + 1;
+            size_t begin=0, end = begin+page_size;
+
+            while(end<table_size){
+                threadPool.addTask(std::bind(find_local_min,this,
+                                             table.begin() + begin, table.begin() + end
+                        ,this->min));
+                begin += page_size;
+                end +=page_size;
+            }
+            //handle the last page
+            std::cerr << "max content in main" << this->min[0].first << "\n";
+            threadPool.addTask(std::bind(find_local_min,this,
+                                         table.begin() + begin, table.end()
+                    ,this->min));
+
+            //todo@ find a better way than busy wait?
+            threadPool.waitfinish();
+        }
+
         // todo: optimize the return result
         vector<Table::ValueType> min_result;
         for (unsigned int i=0;i<this->min.size();i++){
