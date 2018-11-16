@@ -7,11 +7,14 @@
 
 #include "../Query.h"
 
+
 class MaxQuery : public ComplexQuery {
     static constexpr const char *qname = "MAX";
-    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> max;
+
 public:
     using ComplexQuery::ComplexQuery;
+
+    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> max;
 
     QueryResult::Ptr execute() override;
 

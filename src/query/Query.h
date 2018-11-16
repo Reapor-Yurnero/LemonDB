@@ -7,6 +7,7 @@
 
 #include "QueryResult.h"
 #include "../db/Table.h"
+#include "../threadpool/ThreadPool.h"
 
 #include <functional>
 #include <memory>

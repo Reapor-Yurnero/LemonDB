@@ -5,6 +5,7 @@
 #include "query/QueryParser.h"
 #include "query/QueryBuilders.h"
 
+#include <time.h>
 #include <getopt.h>
 #include <fstream>
 #include <iostream>
@@ -83,6 +84,7 @@ int main(int argc, char *argv[]) {
     // Do not use printf/fprintf in <cstdio> with this line
     std::ios_base::sync_with_stdio(false);
 
+
     parseArgs(argc, argv);
 
     std::fstream fin;
@@ -146,8 +148,10 @@ int main(int argc, char *argv[]) {
             // REPL: Read-Evaluate-Print-Loop
             std::string queryStr = extractQueryString(is);
             Query::Ptr query = p.parseQuery(queryStr);
+            //std::time_t time = clock();
             QueryResult::Ptr result = query->execute();
             std::cout << ++counter << "\n";
+            //std::cerr << counter << "   " << queryStr << "     " << clock()-time << "\n";
             if (result->success()) {
                 if (result->display()) {
                     std::cout << *result;
@@ -155,7 +159,7 @@ int main(int argc, char *argv[]) {
                 } else {
 #ifndef NDEBUG
                     std::cout.flush();
-                    std::cerr << *result;
+                    //std::cerr << *result;
 #endif
                     //std::cout.flush();
                 }

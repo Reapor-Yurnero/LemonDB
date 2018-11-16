@@ -8,8 +8,40 @@
 
 #include <iostream>
 #include <algorithm>
+#include <time.h>
 
 constexpr const char *MaxQuery::qname;
+
+std::mutex g_mutex;
+
+void find_local_max(MaxQuery* query, Table *table, Table::Iterator begin, Table::Iterator end, std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_max){
+    //local vector to store max in this page
+    //std::time_t time = clock();
+    /*
+    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_max;
+    local_max.reserve(query->max.size());
+    for(size_t i = 0; i< query->max.size() ; i++)
+        local_max.emplace_back(std::make_pair(query->max[i].first,Table::ValueTypeMin));
+     */
+    for (auto it = begin; it != end; ++it) {
+        if (query->evalCondition(*it)) {
+            for (auto iter=local_max.begin();iter!=local_max.end();++iter){
+                if( (*it)[(*iter).first] > (*iter).second )
+                    (*iter).second = (*it)[(*iter).first];
+            }
+        }
+    }
+
+    //std::cerr << "max begin with index "<< index << "\n";
+
+    std::unique_lock<std::mutex> lock(g_mutex);
+    for (size_t i=0;i<local_max.size();i++){
+        if(local_max[i].second > query->max[i].second)
+            std::swap(local_max[i].second, query->max[i].second);
+    }
+    //std::cerr << "clock time for this thread is:" << "     " << clock()-time << "\n";
+}
+
 
 QueryResult::Ptr MaxQuery::execute() {
     using namespace std;
@@ -33,7 +65,10 @@ QueryResult::Ptr MaxQuery::execute() {
             }
         }
         auto result = initCondition(table);
+
+        /*
         if (result.second) {
+
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
                     for (auto iter=this->max.begin();iter!=this->max.end();++iter){
@@ -41,6 +76,35 @@ QueryResult::Ptr MaxQuery::execute() {
                             (*iter).second = (*it)[(*iter).first];
                     }
                 }
+            }
+        }*/
+
+        if (result.second) {
+            auto table_size = table.size();
+            auto thread_num = std::thread::hardware_concurrency()-1;
+
+            //std::cerr<<thread_num<< "Threadnum!\n";
+            //thread_num = 4;
+
+            std::vector<std::thread> thread_total;
+            thread_total.reserve(thread_num);
+            //calculate the corresponding page number
+            size_t page_size = (table_size - 1)/thread_num + 1;
+            size_t begin=0, end = begin+page_size;
+
+            while(end<table.size()){
+                std::thread thread(find_local_max,this,&table,table.begin()
+                                 + begin, table.begin() + end, this->max);
+                thread_total.emplace_back(std::move(thread));
+                begin += page_size;
+                end +=page_size;
+            }
+            //handle the last page
+            std::thread thread(find_local_max,this,&table,
+                               table.begin() + begin, table.end(),this->max);
+            thread_total.emplace_back(std::move(thread));
+            for(size_t i =0;i<thread_total.size();i++){
+                thread_total[i].join();
             }
         }
 
