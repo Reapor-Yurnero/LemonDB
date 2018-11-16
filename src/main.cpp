@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
                 } else {
 #ifndef NDEBUG
                     std::cout.flush();
-                    //std::cerr << *result;
+                    std::cerr << *result;
 #endif
                     //std::cout.flush();
                 }
