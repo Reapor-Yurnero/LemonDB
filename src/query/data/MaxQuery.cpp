@@ -9,7 +9,7 @@
 #include <iostream>
 #include <algorithm>
 
-//#define TIMER
+#define TIMER
 
 constexpr const char *MaxQuery::qname;
 
@@ -48,7 +48,7 @@ QueryResult::Ptr MaxQuery::execute() {
     using namespace std;
 #ifdef TIMER
     struct timespec ts1, ts2;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
 #endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
@@ -118,7 +118,7 @@ QueryResult::Ptr MaxQuery::execute() {
             max_result.emplace_back(this->max.at(i).second);
         }
 #ifdef TIMER
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts2);
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
