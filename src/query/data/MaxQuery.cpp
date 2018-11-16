@@ -6,13 +6,23 @@
 #include "../../db/Database.h"
 #include "../QueryResult.h"
 
-#include <iostream>
 #include <algorithm>
+
+// #define TIMER // counter for MAX solely
+
+#ifdef TIMER
+#include <iostream>
+
+#endif
 
 constexpr const char *MaxQuery::qname;
 
 QueryResult::Ptr MaxQuery::execute() {
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -48,6 +58,11 @@ QueryResult::Ptr MaxQuery::execute() {
         for (unsigned int i=0;i<this->max.size();i++){
             max_result.emplace_back(this->max.at(i).second);
         }
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return make_unique<AnswerMsgResult>(max_result);
     }
     catch (const TableNameNotFound &e) {

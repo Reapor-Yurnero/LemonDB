@@ -9,6 +9,8 @@
 #include <unordered_map>
 
 #include "Table.h"
+// open timer for all queries
+// #define TIMER
 
 class Database {
 private:

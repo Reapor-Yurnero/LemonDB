@@ -7,12 +7,19 @@
 #include "../QueryResult.h"
 
 //#include <algorithm>
-//#include <iostream>
+#ifdef TIMER
+#include <iostream>
+
+#endif
 
 constexpr const char *DuplicateQuery::qname;
 
 QueryResult::Ptr DuplicateQuery::execute() {
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if(!this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -32,6 +39,11 @@ QueryResult::Ptr DuplicateQuery::execute() {
             }
             table.appendByCache();
         }
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"DUPLICATE takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return make_unique<RecordCountResult>(counter);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
