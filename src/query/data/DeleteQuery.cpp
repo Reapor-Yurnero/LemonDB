@@ -77,10 +77,11 @@ QueryResult::Ptr DeleteQuery::mergeAndPrint() {
     Table::SizeType counter = 0;
     std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
     ++complete_num;
-    if(complete_num == (int)concurrency_num){
-        for(const auto &task:subTasks){
-            counter += task->getCounter();
-        }
+    if(complete_num < (int)concurrency_num){
+        return std::make_unique<NullQueryResult>();
+    }
+    for(const auto &task:subTasks){
+        counter += task->getCounter();
     }
     table.updateByCache();
     table.writeLock.unlock();
