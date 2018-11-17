@@ -141,13 +141,17 @@ int main(int argc, char *argv[]) {
      *      real task such as Query operators
      * }
      */
+    std::vector<Query::Ptr> queries;
     while (is) {
         try {
             // A very standard REPL
             // REPL: Read-Evaluate-Print-Loop
             std::string queryStr = extractQueryString(is);
             Query::Ptr query = p.parseQuery(queryStr);
-            QueryResult::Ptr result = query->execute();
+            auto q = query.get();
+            //QueryResult::Ptr result = query->execute();
+            queries.emplace_back(std::move(query));
+            QueryResult::Ptr result = q->execute();
             std::cout << ++counter << "\n";
             if (result->success()) {
                 if (result->display()) {

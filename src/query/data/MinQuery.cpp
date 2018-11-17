@@ -59,6 +59,7 @@ QueryResult::Ptr MinQuery::execute() {
         /*this->min.clear();*/
         this->min.reserve(this->operands.size());
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(

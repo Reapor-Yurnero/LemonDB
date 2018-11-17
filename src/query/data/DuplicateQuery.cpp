@@ -29,6 +29,7 @@ QueryResult::Ptr DuplicateQuery::execute() {
     Table::SizeType  counter = 0;
     try{
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         auto result = initCondition(table);
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {

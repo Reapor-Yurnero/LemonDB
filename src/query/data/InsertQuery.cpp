@@ -29,6 +29,7 @@ QueryResult::Ptr InsertQuery::execute() {
     Database &db = Database::getInstance();
     try {
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         auto &key = this->operands.front();
         vector<Table::ValueType> data;
         data.reserve(this->operands.size() - 1);

@@ -8,10 +8,10 @@
 #include "../Query.h"
 
 
-class DeleteQuery : public ComplexQuery {
+class DeleteQuery : public ConcurrentQuery {
     static constexpr const char *qname = "DELETE";
 public:
-    using ComplexQuery::ComplexQuery;
+    using ConcurrentQuery::ConcurrentQuery;
 
     QueryResult::Ptr execute() override;
 

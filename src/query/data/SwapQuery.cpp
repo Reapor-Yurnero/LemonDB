@@ -31,6 +31,7 @@ QueryResult::Ptr SwapQuery::execute() {
     Table::SizeType counter = 0;
     try {
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         int mark = 0;
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {

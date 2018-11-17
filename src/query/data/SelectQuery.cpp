@@ -28,6 +28,7 @@ QueryResult::Ptr SelectQuery::execute() {
     Database &db = Database::getInstance();
     try {
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         if (this->operands[0] != "KEY")
             return make_unique<ErrorMsgResult>(
                     qname, "The beginning field is not KEY"

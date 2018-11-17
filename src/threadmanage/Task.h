@@ -5,20 +5,20 @@
 #ifndef PROJECT_TASK_H
 #define PROJECT_TASK_H
 
-//#include "../query/Query_Base.h"
+#include "../query/Query_Base.h"
 #include "../db/Table.h"
 
 class Task {
 public:
 //protected:
-    void *query;
+    Query *query;
     Table::Iterator begin;
     Table::Iterator end;
     Table *table;
     Table::SizeType counter;
 
 public:
-    explicit Task(void *query, Table::Iterator begin, Table::Iterator end, Table *table = nullptr);
+    explicit Task(Query *query, Table::Iterator begin, Table::Iterator end, Table *table = nullptr);
 
     Task(const Task &) = delete;
 

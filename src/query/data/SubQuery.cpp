@@ -32,6 +32,7 @@ QueryResult::Ptr SubQuery::execute() {
     try {
         this->sub_src.reserve(this->operands.size()-2);
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(

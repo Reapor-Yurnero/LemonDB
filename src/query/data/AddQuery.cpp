@@ -16,6 +16,7 @@
 constexpr const char *AddQuery::qname;
 
 QueryResult::Ptr AddQuery::execute() {
+
     using namespace std;
 #ifdef TIMER
     struct timespec ts1, ts2;
@@ -31,6 +32,7 @@ QueryResult::Ptr AddQuery::execute() {
     try {
         this->add_src.reserve(this->operands.size()-1);
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(

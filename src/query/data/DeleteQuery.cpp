@@ -77,7 +77,7 @@ QueryResult::Ptr DeleteQuery::mergeAndPrint() {
     Table::SizeType counter = 0;
     std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
     ++complete_num;
-    if(iffinish()){
+    if(complete_num == (int)concurrency_num){
         for(const auto &task:subTasks){
             counter += task->getCounter();
         }
