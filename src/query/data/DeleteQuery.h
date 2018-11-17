@@ -7,6 +7,7 @@
 
 #include "../Query.h"
 
+
 class DeleteQuery : public ComplexQuery {
     static constexpr const char *qname = "DELETE";
 public:
@@ -16,7 +17,16 @@ public:
 
     std::string toString() override;
 
-    //bool modify() override { return true; }
+    QueryResult::Ptr mergeAndPrint() override;
+
+    friend class DeleteTask;
+};
+
+class DeleteTask : public Task {
+public:
+    using Task::Task;
+
+    void execute() override;
 };
 
 #endif //PROJECT_DELETEQUERY_H

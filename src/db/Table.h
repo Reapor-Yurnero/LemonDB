@@ -51,7 +51,7 @@ public:
     static constexpr const ValueType ValueTypeMin = std::numeric_limits<ValueType>::min();
     typedef size_t SizeType;
 
-    //std::mutex modifyLock;
+    std::mutex writeLock;
     //std::condition_variable modifyCond; //Used to maintain correct modified version for different time query
 
 private:

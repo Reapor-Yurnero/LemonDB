@@ -62,7 +62,56 @@ ComplexQuery::initCondition(const Table &table) {
     }
     return result;
 }
+/*
+template<class RealTask>
+void ConcurrentQuery::addTaskByPaging(Table &table) {
+    //todo: Adjust page_size to a proper value
+    ThreadPool &threadPool = ThreadPool::getPool();
+    unsigned int page_size = 10;
+    size_t total_size = table.size();
+    Table::Iterator begin = table.begin();
+    Table::Iterator end;
+    {
+        std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+        if(total_size == 0){
+            end = table.end();
+            auto newTask = std::unique_ptr<RealTask>(new RealTask(this, begin, end, &table));
+            Task *newTaskPtr = newTask.get();
+            subTasks.emplace_back(std::move(newTask));
+            threadPool.addTask(newTaskPtr);
+        } else{
+            size_t residue = total_size % page_size;
+            if(residue == 0)
+                concurrency_num = total_size / page_size;
+            else
+                concurrency_num = total_size / page_size +1;
+            for(unsigned long i=0;i<concurrency_num;i++){
+                if(residue != 0 && i == concurrency_num-1){
+                    end = begin + residue;
+                } else
+                    end = begin + page_size;
+                auto newTask = std::unique_ptr<RealTask>(new RealTask(this, begin, end, &table));
+                Task *newTaskPtr = newTask.get();
+                subTasks.emplace_back(std::move(newTask));
+                threadPool.addTask(newTaskPtr);
+                begin = end;
+            }
+        }
+    }
 
+}
+*/
+/*
+template<class RealTask>
+void ConcurrentQuery::addSingleTask(Table &table) {
+    ThreadPool &threadPool = ThreadPool::getPool();
+    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+    auto newTask = std::unique_ptr<RealTask>(new RealTask(this, table.begin(), table.end(), &table));
+    Task *newTaskPtr = newTask.get();
+    subTasks.emplace_back(std::move(newTask));
+    threadPool.addTask(newTaskPtr);
+}
+*/
 bool ComplexQuery::evalCondition(const Table::Object &object) {
     bool ret = true;
     for (const auto &cond : condition) {

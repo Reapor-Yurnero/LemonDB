@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
     }
 
     //Generate thread pool instance and start
-    ThreadPool::initPool(parsedArgs.threads-1);
+    ThreadPool::initPool(parsedArgs.threads - 1);
     //pool.stop();
 
 

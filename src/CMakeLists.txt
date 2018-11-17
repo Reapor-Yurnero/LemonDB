@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -pedantic -Wno-unused-result -Wno-unused-parameter")
 
 set(SOURCE_FILES
-        threadpool/ThreadPool.cpp threadpool/ThreadPool.h
+        threadmanage/ThreadPool.cpp threadmanage/ThreadPool.h
         db/Database.cpp db/Database.h
         db/Table.cpp db/Table.h
 
@@ -36,7 +36,7 @@ set(SOURCE_FILES
         query/data/CountQuery.cpp query/data/CountQuery.h
         query/data/DuplicateQuery.h query/data/DuplicateQuery.cpp
         query/data/SumQuery.cpp query/data/SumQuery.h
-        )
+        threadmanage/Task.cpp threadmanage/Task.h query/Query_Base.h)
 
 add_executable(lemondb main.cpp ${SOURCE_FILES})
 target_link_libraries(lemondb pthread)

@@ -5,9 +5,11 @@
 #ifndef PROJECT_QUERY_H
 #define PROJECT_QUERY_H
 
+#include "Query_Base.h"
 #include "QueryResult.h"
 #include "../db/Table.h"
-#include "../threadpool/ThreadPool.h"
+#include "../threadmanage/Task.h"
+#include "../threadmanage/ThreadPool.h"
 
 #include <functional>
 #include <memory>
@@ -22,37 +24,75 @@ struct QueryCondition {
     Table::ValueType valueParsed;
 };
 
-class Query {
+/*
+ * To reduce modifciation, add ConcurrentQuery here. In fact, it should be subclass of ComplexQuery.
+ */
+
+class ConcurrentQuery : public Query {
 protected:
-    std::string targetTable;
-    int id = -1;
-
+    std::vector<std::unique_ptr<Task> > subTasks;
+    size_t concurrency_num = 1;
+    int complete_num = 0;
+    std::mutex concurrentLock;
 public:
-    Query() = default;
+    ConcurrentQuery() = default;
 
-    explicit Query(std::string targetTable) : targetTable(std::move(targetTable)) {}
+    explicit ConcurrentQuery(std::string targetTable) : Query(std::move(targetTable)), concurrency_num(1), complete_num(0) {}
 
-    typedef std::unique_ptr<Query> Ptr;
-
-    virtual QueryResult::Ptr execute() = 0;
-
-    virtual std::string toString() = 0;
-
-    virtual ~Query() = default;
-};
-
-class NopQuery : public Query {
-public:
-    QueryResult::Ptr execute() override {
-        return std::make_unique<NullQueryResult>();
+    bool iffinish(){
+        return (complete_num == (int)concurrency_num);
     }
 
-    std::string toString() override {
-        return "QUERY = NOOP";
+    template<class RealTask>
+    void addTaskByPaging(Table &table){
+        //todo: Adjust page_size to a proper value
+        ThreadPool &threadPool = ThreadPool::getPool();
+        unsigned int page_size = 10;
+        size_t total_size = table.size();
+        auto begin = table.begin();
+        decltype(begin) end;
+        {
+            std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+            if(total_size == 0){
+                end = table.end();
+                auto newTask = std::unique_ptr<RealTask>(new RealTask(this->, begin, end, &table));
+                auto newTaskPtr = newTask.get();
+                subTasks.emplace_back(std::move(newTask));
+                threadPool.addTask(newTaskPtr);
+            } else{
+                size_t residue = total_size % page_size;
+                if(residue == 0)
+                    concurrency_num = total_size / page_size;
+                else
+                    concurrency_num = total_size / page_size +1;
+                for(unsigned long i=0;i<concurrency_num;i++){
+                    if(residue != 0 && i == concurrency_num-1){
+                        end = begin + residue;
+                    } else
+                        end = begin + page_size;
+                    auto newTask = std::unique_ptr<RealTask>(new RealTask(this, begin, end, &table));
+                    auto newTaskPtr = newTask.get();
+                    subTasks.emplace_back(std::move(newTask));
+                    threadPool.addTask(newTaskPtr);
+                    begin = end;
+                }
+            }
+        }
+
+    }
+
+    template<class RealTask>
+    void addSingleTask(Table &table){
+        ThreadPool &threadPool = ThreadPool::getPool();
+        std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+        auto newTask = std::unique_ptr<RealTask>(new RealTask(this, table.begin(), table.end(), &table));
+        auto newTaskPtr = newTask.get();
+        subTasks.emplace_back(std::move(newTask));
+        threadPool.addTask(newTaskPtr);
     }
 };
 
-class ComplexQuery : public Query {
+class ComplexQuery : public ConcurrentQuery {
 protected:
     /** The field names in the first () */
     std::vector<std::string> operands;
@@ -95,7 +135,7 @@ public:
     ComplexQuery(std::string targetTable,
                  std::vector<std::string> operands,
                  std::vector<QueryCondition> condition)
-            : Query(std::move(targetTable)),
+            : ConcurrentQuery(std::move(targetTable)),
               operands(std::move(operands)),
               condition(std::move(condition)) {
     }

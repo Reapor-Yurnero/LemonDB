@@ -15,11 +15,11 @@
 #include <unistd.h>
 constexpr const char *MaxQuery::qname;
 
-
+/*
 void find_local_max(MaxQuery* const query, Table::Iterator begin, Table::Iterator end,
                     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_max){
     //local vector to store max in this page
-    /*
+
     {
         std::unique_lock<std::mutex> lock(query->g_mutex);
         local_max.reserve(query->max.size());
@@ -33,7 +33,7 @@ void find_local_max(MaxQuery* const query, Table::Iterator begin, Table::Iterato
     std::cerr << "ahh\n";
     std::cerr << local_max[0].first << " test \n\n";
     std::cerr << (*begin)[std::string("class")] << " test \n";
-    */
+
     for (auto it = begin; it != end; ++it) {
         if (query->evalCondition(*it)) {
             for (auto iter=local_max.begin();iter!=local_max.end();++iter){
@@ -56,7 +56,7 @@ void find_local_max(MaxQuery* const query, Table::Iterator begin, Table::Iterato
 
     //std::cerr << query->max[0].second << " test3 \n\n";
 }
-
+*/
 
 QueryResult::Ptr MaxQuery::execute() {
     using namespace std;
@@ -70,7 +70,7 @@ QueryResult::Ptr MaxQuery::execute() {
                 "No operand (? operands)."_f % operands.size()
         );
     Database &db = Database::getInstance();
-    ThreadPool &threadPool = ThreadPool::getPool();
+    //ThreadPool &threadPool = ThreadPool::getPool();
     try {
         /*this->max.clear();*/
         this->max.reserve(this->operands.size());
@@ -86,7 +86,7 @@ QueryResult::Ptr MaxQuery::execute() {
         }
         auto result = initCondition(table);
 
-        /*
+
         if (result.second) {
 
             for (auto it = table.begin(); it != table.end(); ++it) {
@@ -98,7 +98,7 @@ QueryResult::Ptr MaxQuery::execute() {
                 }
             }
         }
-        */
+
 
 
         /*
@@ -132,7 +132,7 @@ QueryResult::Ptr MaxQuery::execute() {
         }
         */
 
-
+/*
         if (result.second) {
             auto table_size = table.size();
             auto thread_num = std::thread::hardware_concurrency()-1;
@@ -158,7 +158,7 @@ QueryResult::Ptr MaxQuery::execute() {
             //todo@ find a better way than busy wait?
             threadPool.waitfinish();
         }
-
+*/
         vector<Table::ValueType> max_result;
         for (unsigned int i=0;i<this->max.size();i++){
             max_result.emplace_back(this->max.at(i).second);

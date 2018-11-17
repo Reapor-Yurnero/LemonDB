@@ -17,7 +17,7 @@
 
 constexpr const char *MinQuery::qname;
 
-
+/*
 void find_local_min(MinQuery* const query, Table::Iterator begin, Table::Iterator end,
                     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_min){
 
@@ -39,7 +39,7 @@ void find_local_min(MinQuery* const query, Table::Iterator begin, Table::Iterato
         }
     }
 }
-
+*/
 
 QueryResult::Ptr MinQuery::execute() {
     // todo: optimize the data structure for comparison
@@ -54,7 +54,7 @@ QueryResult::Ptr MinQuery::execute() {
                 "No operand (? operands)."_f % operands.size()
         );
     Database &db = Database::getInstance();
-    ThreadPool &threadPool = ThreadPool::getPool();
+    //ThreadPool &threadPool = ThreadPool::getPool();
     try {
         /*this->min.clear();*/
         this->min.reserve(this->operands.size());
@@ -70,7 +70,7 @@ QueryResult::Ptr MinQuery::execute() {
         }
         auto result = initCondition(table);
 
-        /*
+
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
@@ -80,8 +80,8 @@ QueryResult::Ptr MinQuery::execute() {
                 }
             }
         }
-        */
 
+/*
         if (result.second) {
             auto table_size = table.size();
             auto thread_num = std::thread::hardware_concurrency()-1;
@@ -107,7 +107,7 @@ QueryResult::Ptr MinQuery::execute() {
             //todo@ find a better way than busy wait?
             threadPool.waitfinish();
         }
-
+*/
         // todo: optimize the return result
         vector<Table::ValueType> min_result;
         for (unsigned int i=0;i<this->min.size();i++){
