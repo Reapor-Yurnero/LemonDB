@@ -6,7 +6,10 @@
 
 #include "../../db/Database.h"
 #include "../QueryResult.h"
+#ifdef TIMER
 #include <iostream>
+
+#endif
 
 #include <algorithm>
 
@@ -39,6 +42,10 @@ void find_local_min(MinQuery* const query, Table::Iterator begin, Table::Iterato
 QueryResult::Ptr MinQuery::execute() {
     // todo: optimize the data structure for comparison
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -104,7 +111,11 @@ QueryResult::Ptr MinQuery::execute() {
         for (unsigned int i=0;i<this->min.size();i++){
             min_result.emplace_back(this->min.at(i).second);
         }
-
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"MIN takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return make_unique<AnswerMsgResult>(min_result);
     }
     catch (const TableNameNotFound &e) {

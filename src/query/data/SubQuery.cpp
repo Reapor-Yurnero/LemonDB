@@ -9,10 +9,19 @@
 
 #include <algorithm>
 
+#ifdef TIMER
+#include <iostream>
+
+#endif
+
 constexpr const char *SubQuery::qname;
 
 QueryResult::Ptr SubQuery::execute() {
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -52,7 +61,11 @@ QueryResult::Ptr SubQuery::execute() {
                 }
             }
         }
-
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"SUB takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return make_unique<RecordCountResult>(counter);
     }
     catch (const TableNameNotFound &e) {

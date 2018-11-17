@@ -11,6 +11,8 @@
 #include <memory>
 #include <unordered_map>
 
+// open timer for all queries
+// #define TIMER
 
 class Database {
 private:
@@ -77,7 +79,6 @@ public:
      * @return reference of loaded table
      */
     Table &loadTableFromStream(std::istream &is, std::string source = "");
-
 
     void exit();
 };
