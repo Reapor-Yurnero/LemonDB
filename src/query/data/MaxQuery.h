@@ -8,11 +8,11 @@
 #include "../Query.h"
 
 
-class MaxQuery : public ComplexQuery {
+class MaxQuery : public ConcurrentQuery {
     static constexpr const char *qname = "MAX";
 
 public:
-    using ComplexQuery::ComplexQuery;
+    using ConcurrentQuery::ConcurrentQuery;
 
     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> max;
 
@@ -20,11 +20,18 @@ public:
 
     QueryResult::Ptr execute() override;
 
+    QueryResult::Ptr mergeAndPrint() override;
+
     std::string toString() override;
 
     //bool modify() override { return false; }
 };
 
-
+class MaxTask : public Task {
+public:
+    using Task::Task;
+    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_max;
+    void execute() override;
+};
 
 #endif //PROJECT_MAXQUERY_H

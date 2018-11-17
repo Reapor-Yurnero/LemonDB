@@ -44,9 +44,8 @@ QueryResult::Ptr MaxQuery::execute() {
         }
         auto result = initCondition(table);
 
-
+        /*
         if (result.second) {
-
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
                     for (auto iter=this->max.begin();iter!=this->max.end();++iter){
@@ -60,13 +59,17 @@ QueryResult::Ptr MaxQuery::execute() {
         vector<Table::ValueType> max_result;
         for (unsigned int i=0;i<this->max.size();i++){
             max_result.emplace_back(this->max.at(i).second);
+        }*/
+        if (result.second) {
+            addTaskByPaging<MaxTask>(table);
         }
+        
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
-        return make_unique<AnswerMsgResult>(max_result);
+        return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
@@ -82,4 +85,48 @@ QueryResult::Ptr MaxQuery::execute() {
 
 std::string MaxQuery::toString() {
     return "QUERY = MAX " + this->targetTable + "\"";
+}
+
+void MaxTask::execute() {
+    auto real_query = dynamic_cast<MaxQuery *>(query);
+    local_max = real_query->max;
+    for (auto table_it = begin;table_it != end;++table_it) {
+        if (real_query->evalCondition(*table_it)) {
+            for (auto max_it=local_max.begin();max_it!=local_max.end();++max_it) {
+                if ( (*table_it)[(*max_it).first] > (*max_it).second )
+                    (*max_it).second = (*table_it)[(*max_it).first];
+            }
+        }
+    }
+    //update the global max
+    {
+        std::unique_lock<std::mutex> lock(real_query->g_mutex);
+        for (size_t i=0;i<local_max.size();i++){
+            if(local_max[i].second > real_query->max[i].second)
+                std::swap(local_max[i].second, real_query->max[i].second);
+        }
+    }
+    real_query->mergeAndPrint();
+}
+
+QueryResult::Ptr MaxQuery::mergeAndPrint() {
+    Database &db = Database::getInstance();
+    auto &table = db[this->targetTable];
+    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+    ++complete_num;
+    if(complete_num < (int)concurrency_num){
+        return std::make_unique<NullQueryResult>();
+    }
+    //allow the next query to go
+    table.writeLock.unlock();
+    std::vector<Table::ValueType> max_result;
+    for (unsigned int i=0;i<this->max.size();i++){
+        max_result.emplace_back(this->max.at(i).second);
+    }
+    std::cout << "ANSWER = ( ";
+    for (auto result : max_result) {
+        std::cout << result << " ";
+    }
+    std::cout << ") ";
+    return std::make_unique<AnswerMsgResult>(max_result);
 }

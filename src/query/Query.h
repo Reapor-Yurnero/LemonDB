@@ -95,7 +95,7 @@ public:
     void addTaskByPaging(Table &table){
         //todo: Adjust page_size to a proper value
         ThreadPool &threadPool = ThreadPool::getPool();
-        unsigned int page_size = 10;
+        unsigned int page_size = 5000;
         size_t total_size = table.size();
         auto begin = table.begin();
         decltype(begin) end;
