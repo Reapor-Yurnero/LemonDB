@@ -5,10 +5,14 @@
 #ifndef PROJECT_DB_H
 #define PROJECT_DB_H
 
+#include "../threadmanage/ThreadPool.h"
+#include "Table.h"
+
 #include <memory>
 #include <unordered_map>
 
-#include "Table.h"
+// open timer for all queries
+// #define TIMER
 
 class Database {
 private:
@@ -31,6 +35,10 @@ private:
      * The default constructor is made private for singleton instance
      */
     Database() = default;
+
+    /**
+     * The threadpool for single query
+     */
 
 public:
     void testDuplicate(const std::string &tableName);

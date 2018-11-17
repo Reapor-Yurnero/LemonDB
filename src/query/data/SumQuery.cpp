@@ -6,7 +6,10 @@
 #include "../../db/Database.h"
 #include "../QueryResult.h"
 
+#ifdef TIMER
 #include <iostream>
+
+#endif
 #include <numeric>
 #include <algorithm>
 
@@ -14,6 +17,10 @@ constexpr const char *SumQuery::qname;
 
 QueryResult::Ptr SumQuery::execute() {
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -22,6 +29,7 @@ QueryResult::Ptr SumQuery::execute() {
     Database &db = Database::getInstance();
     try {
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         this->field_sum.reserve(this->operands.size());
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
@@ -65,6 +73,11 @@ QueryResult::Ptr SumQuery::execute() {
 //        }
 //        cout << ")" << '\n';
 //        free(sum);
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"SUM takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return std::make_unique<AnswerMsgResult>(sum_result);
     }
     catch (const TableNameNotFound &e) {

@@ -8,11 +8,20 @@
 #include "../QueryResult.h"
 
 #include <algorithm>
+#ifdef TIMER
+#include <iostream>
+
+#endif
 
 constexpr const char *AddQuery::qname;
 
 QueryResult::Ptr AddQuery::execute() {
+
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -23,6 +32,7 @@ QueryResult::Ptr AddQuery::execute() {
     try {
         this->add_src.reserve(this->operands.size()-1);
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(
@@ -49,7 +59,11 @@ QueryResult::Ptr AddQuery::execute() {
                 }
             }
         }
-
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"ADD takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return make_unique<RecordCountResult>(counter);
     }
     catch (const TableNameNotFound &e) {

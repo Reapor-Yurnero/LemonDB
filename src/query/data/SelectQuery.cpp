@@ -7,12 +7,19 @@
 #include "../QueryResult.h"
 #include <map>
 
+#ifdef TIMER
 #include <iostream>
+
+#endif
 
 constexpr const char *SelectQuery::qname;
 
 QueryResult::Ptr SelectQuery::execute() {
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     if (this->operands.empty())
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
@@ -21,6 +28,7 @@ QueryResult::Ptr SelectQuery::execute() {
     Database &db = Database::getInstance();
     try {
         auto &table = db[this->targetTable];
+        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         if (this->operands[0] != "KEY")
             return make_unique<ErrorMsgResult>(
                     qname, "The beginning field is not KEY"
@@ -39,6 +47,11 @@ QueryResult::Ptr SelectQuery::execute() {
                 }
             }
         }
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"SELECT takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return std::make_unique<AnswerMsgResult>(move(rowData));
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);

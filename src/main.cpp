@@ -10,7 +10,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "threadpool/ThreadPool.h"
 
 struct {
     std::string listen;
@@ -122,7 +121,7 @@ int main(int argc, char *argv[]) {
     }
 
     //Generate thread pool instance and start
-    //ThreadPool &pool = ThreadPool::initPool(parsedArgs.threads);
+    ThreadPool::initPool(parsedArgs.threads - 1);
     //pool.stop();
 
 
@@ -142,16 +141,18 @@ int main(int argc, char *argv[]) {
      *      real task such as Query operators
      * }
      */
+    std::vector<Query::Ptr> queries;
     while (is) {
         try {
             // A very standard REPL
             // REPL: Read-Evaluate-Print-Loop
             std::string queryStr = extractQueryString(is);
             Query::Ptr query = p.parseQuery(queryStr);
-            //std::time_t time = clock();
-            QueryResult::Ptr result = query->execute();
+            auto q = query.get();
+            //QueryResult::Ptr result = query->execute();
+            queries.emplace_back(std::move(query));
+            QueryResult::Ptr result = q->execute();
             std::cout << ++counter << "\n";
-            //std::cerr << counter << "   " << queryStr << "     " << clock()-time << "\n";
             if (result->success()) {
                 if (result->display()) {
                     std::cout << *result;
@@ -175,6 +176,22 @@ int main(int argc, char *argv[]) {
             std::cerr << e.what() << std::endl;
         }
     }
+    /*
+    //todo@ implement threads that run query for each table
+    while(is){
+        try{
+            std::string queryStr = extractQueryString(is);
+            Query::Ptr query = p.parseQuery(queryStr);
+
+        }   catch (const std::ios_base::failure& e) {
+            // End of input
+            break;
+        } catch (const std::exception& e) {
+            std::cout.flush();
+            std::cerr << e.what() << std::endl;
+        }
+    }
+    */
     /*
     while(is){
         try {

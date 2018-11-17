@@ -7,10 +7,19 @@
 
 #include <fstream>
 
+#ifdef TIMER
+#include <iostream>
+
+#endif
+
 constexpr const char *DumpTableQuery::qname;
 
 QueryResult::Ptr DumpTableQuery::execute() {
     using namespace std;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+    clock_gettime(CLOCK_MONOTONIC, &ts1);
+#endif
     auto &db = Database::getInstance();
     try {
         ofstream outfile(this->fileName);
@@ -19,6 +28,11 @@ QueryResult::Ptr DumpTableQuery::execute() {
         }
         outfile << db[this->targetTable];
         outfile.close();
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"DUMP takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
         return make_unique<SuccessMsgResult>(qname, targetTable);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());

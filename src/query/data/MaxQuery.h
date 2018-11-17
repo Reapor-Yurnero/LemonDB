@@ -16,6 +16,8 @@ public:
 
     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> max;
 
+    std::mutex g_mutex;
+
     QueryResult::Ptr execute() override;
 
     std::string toString() override;
