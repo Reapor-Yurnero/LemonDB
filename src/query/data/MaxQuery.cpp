@@ -8,7 +8,8 @@
 
 #include <algorithm>
 
-#define TIMER // counter for MAX solely
+// open counter for MAX solely
+// #define TIMER
 #include <iostream>
 
 #include <unistd.h>
@@ -149,7 +150,7 @@ QueryResult::Ptr MaxQuery::execute() {
                 end +=page_size;
             }
             //handle the last page
-            std::cerr << "max content in main" << this->max[0].first << "\n";
+            //std::cerr << "max content in main" << this->max[0].first << "\n";
             threadPool.addTask(std::bind(find_local_max,this,
                                table.begin() + begin, table.end()
                                ,this->max));

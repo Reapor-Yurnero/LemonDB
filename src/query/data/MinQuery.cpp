@@ -6,6 +6,8 @@
 
 #include "../../db/Database.h"
 #include "../QueryResult.h"
+
+// #define TIMER
 #ifdef TIMER
 #include <iostream>
 
@@ -97,7 +99,7 @@ QueryResult::Ptr MinQuery::execute() {
                 end +=page_size;
             }
             //handle the last page
-            std::cerr << "max content in main" << this->min[0].first << "\n";
+            //std::cerr << "min content in main" << this->min[0].first << "\n";
             threadPool.addTask(std::bind(find_local_min,this,
                                          table.begin() + begin, table.end()
                     ,this->min));
