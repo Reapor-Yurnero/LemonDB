@@ -92,7 +92,11 @@ QueryResult::Ptr SumQuery::execute() {
             addTaskByPaging<SumTask>(table);
         }
         else{
-            db.addresult(this->id,std::make_unique<NullQueryResult>());
+            std::vector<Table::ValueType> sum_result;
+            for (unsigned int i=0;i<this->field_sum.size();i++){
+                sum_result.emplace_back(this->field_sum.at(i).second);
+            }
+            db.addresult(this->id,std::make_unique<AnswerMsgResult>(std::move(sum_result)));
             db.table_locks[this->targetTable]->unlock();
             db.queries.erase(this->id);
         }
