@@ -203,6 +203,8 @@ int main(int argc, char *argv[]) {
             // End of input
             if(listenFile.is_open())
                 listenFile.close();
+            Database &db = Database::getInstance();
+            db.exit();
             break;
         } catch (const std::exception& e) {
             std::cout.flush();
