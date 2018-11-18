@@ -13,6 +13,8 @@
 class LoadTableQuery : public Query {
     static constexpr const char *qname = "LOAD";
 
+    std::vector<std::unique_ptr<Task> > subTasks;
+
 #ifdef TIMER
     struct timespec ts1, ts2;
 #endif
@@ -30,6 +32,10 @@ public:
     std::string toString() override;
 
     //bool modify() override { return false; }
+    template<class RealTask>
+    void addspecialTask(Database &db, Table *table = nullptr);
+
+    void addresult_to_db();
 };
 
 class LoadTask : public Task {

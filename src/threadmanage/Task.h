@@ -20,7 +20,7 @@ public:
 public:
     explicit Task(Query *query, Table::Iterator begin, Table::Iterator end, Table *table = nullptr);
 
-    explicit Task();
+    explicit Task(Query *query);
 
     Task(const Task &) = delete;
 

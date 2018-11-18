@@ -26,8 +26,8 @@ QueryResult::Ptr UpdateQuery::execute() {
     Database &db = Database::getInstance();
     Table::SizeType counter = 0;
     try {
+        db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
-        db.table_locks[this->targetTable].lock();
         if (this->operands[0] == "KEY") {
             this->keyValue = this->operands[1];
         } else {

@@ -43,11 +43,18 @@ private:
     Database() = default;
 
     /**
-     * The threadpool for single query
+     * The lock for add table lock
      */
+    std::mutex table_lock_mutex;
 
 public:
-    static std::unordered_map<std::string,std::mutex> table_locks;
+    std::unordered_map<std::string,std::unique_ptr<std::mutex>> table_locks;
+
+    void add_table_lock(std::string tablename){
+        //std::mutex lock;
+        std::unique_lock<std::mutex> lock(this->table_lock_mutex);
+        this->table_locks.emplace(tablename,std::make_unique<std::mutex>());
+    }
 
     void addresult(int id,QueryResult::Ptr queryresult){
         this->queryresults.emplace(id,std::move(queryresult));
@@ -94,13 +101,6 @@ public:
      */
     Table &loadTableContentFromStream(std::istream &is, std::string source = "");
 
-    template<class RealTask>
-    void addspecialTask(Database &db, Table *table = nullptr){
-        ThreadPool &threadPool = ThreadPool::getPool();
-        auto newTask = std::unique_ptr<RealTask>(new RealTask());
-        auto newTaskPtr = newTask.get();
-        threadPool.addTask(newTaskPtr);
-    }
 
     void exit();
 };

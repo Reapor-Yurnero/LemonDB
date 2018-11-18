@@ -220,20 +220,19 @@ Table &Database::loadTableContentFromStream(std::istream &is, std::string source
         table->insertByIndex(key, std::move(tuple));
     }
 
-    return db.registerTable(std::move(table));
+    {
+
+        return db.registerTable(std::move(table));
+    }
 }
 
 void Database::exit() {
     // wait for all the table task to complete
-    std::cerr << "here1\n";
     for (const auto &table : this->tables){
-        this->table_locks[table.first].lock();
+        this->table_locks[table.first]->lock();
     }
-    std::cerr << "here2\n";
     for(unsigned int i=1;i<this->queryresults.size()+1;i++) {
-        std::cerr << "here3\n";
         std::cout << i << "\n";
-        std::cerr << "here4\n";
         if (queryresults[i]->success()) {
             if (queryresults[i]->display()) {
                 std::cout << *queryresults[i];
@@ -241,7 +240,6 @@ void Database::exit() {
             }
         }
     }
-    std::cerr << "here5\n";
     std::exit(0);
 }
 

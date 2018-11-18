@@ -28,8 +28,8 @@ QueryResult::Ptr DuplicateQuery::execute() {
     Database &db = Database::getInstance();
     Table::SizeType  counter = 0;
     try{
+        db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
-        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         auto result = initCondition(table);
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {

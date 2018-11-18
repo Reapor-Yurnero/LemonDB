@@ -29,10 +29,12 @@ QueryResult::Ptr MaxQuery::execute() {
     Database &db = Database::getInstance();
     try {
         /*this->max.clear();*/
+
+        db.table_locks[this->targetTable]->lock();
+
         this->max.reserve(this->operands.size());
         auto &table = db[this->targetTable];
-        db.table_locks[this->targetTable].lock();
-        //std::cout<<"table lock acquired\n";
+
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(
@@ -105,7 +107,7 @@ void MaxTask::execute() {
 
 QueryResult::Ptr MaxQuery::mergeAndPrint() {
     Database &db = Database::getInstance();
-    auto &table = db[this->targetTable];
+    //auto &table = db[this->targetTable];
     std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
     ++complete_num;
     if(complete_num < (int)concurrency_num){
@@ -116,9 +118,8 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
         max_result.emplace_back(this->max.at(i).second);
     }
     db.addresult(this->id,std::make_unique<AnswerMsgResult>(max_result));
-    std::cerr << this->id << "id inserted\n";
     //allow the next query to go
-    db.table_locks[this->targetTable].lock();
+    db.table_locks[this->targetTable]->unlock();
     //std::cout<<"table lock released\n";
 #ifdef TIMER
     clock_gettime(CLOCK_MONOTONIC, &ts2);

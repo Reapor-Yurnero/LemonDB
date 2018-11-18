@@ -24,8 +24,8 @@ QueryResult::Ptr DeleteQuery::execute() {
     Database &db = Database::getInstance();
     Table::SizeType counter = 0;
     try{
+        db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
-        db.table_locks[this->targetTable].lock();
         if(condition.empty()){
             counter = table.clear();
             return make_unique<RecordCountResult>(counter);
@@ -84,7 +84,7 @@ QueryResult::Ptr DeleteQuery::mergeAndPrint() {
         counter += task->getCounter();
     }
     table.updateByCache();
-    db.table_locks[this->targetTable].unlock();
+    db.table_locks[this->targetTable]->unlock();
     return std::make_unique<RecordCountResult>(counter);
 }
 

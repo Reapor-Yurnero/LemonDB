@@ -6,6 +6,7 @@
 #include "../../db/Database.h"
 
 #include <fstream>
+#include <iostream>
 
 #ifdef TIMER
 #include <iostream>
@@ -27,11 +28,11 @@ QueryResult::Ptr LoadTableQuery::execute() {
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
         this->tablename = db.loadTableNameFromStream(infile, this->fileName);
-        std::mutex lock;
-        db.table_locks.emplace(this->tablename,move(lock));
-        db.table_locks[tablename].lock();
-        db.addspecialTask<LoadTask>(db);
+        db.add_table_lock(this->tablename);
+        db.table_locks[tablename]->lock();
         infile.close();
+        addspecialTask<LoadTask>(db);
+
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"LOAD takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
@@ -43,8 +44,23 @@ QueryResult::Ptr LoadTableQuery::execute() {
     }
 }
 
+template<class RealTask>
+void LoadTableQuery::addspecialTask(Database &db, Table *table) {
+    ThreadPool &threadPool = ThreadPool::getPool();
+    auto newTask = std::unique_ptr<RealTask>(new RealTask(this));
+    auto newTaskPtr = newTask.get();
+    subTasks.emplace_back(std::move(newTask));
+    threadPool.addTask(newTaskPtr);
+}
+
 std::string LoadTableQuery::toString() {
     return "QUERY = Load TABLE, FILE = \"" + this->fileName + "\"";
+}
+
+void LoadTableQuery::addresult_to_db() {
+    Database &db=Database::getInstance();
+    db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
+    db.table_locks[this->tablename]->unlock();
 }
 
 void LoadTask::execute() {
@@ -52,5 +68,6 @@ void LoadTask::execute() {
     auto real_query = dynamic_cast<LoadTableQuery *>(query);
     std::ifstream infile(real_query->fileName);
     db.loadTableContentFromStream(infile, real_query->fileName);
-    db.table_locks[real_query->tablename].unlock();
+    infile.close();
+    real_query->addresult_to_db();
 }

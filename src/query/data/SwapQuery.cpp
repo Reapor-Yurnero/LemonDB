@@ -30,8 +30,8 @@ QueryResult::Ptr SwapQuery::execute() {
     Database &db = Database::getInstance();
     Table::SizeType counter = 0;
     try {
+        db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
-        std::unique_lock<std::mutex> writeLocker(table.writeLock);
         int mark = 0;
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
