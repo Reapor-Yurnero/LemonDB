@@ -7,18 +7,37 @@
 
 #include "../Query.h"
 #include <vector>
+#define TIMER
 
-class SumQuery : public ComplexQuery {
+class SumQuery : public ConcurrentQuery {
     static constexpr const char *qname = "SUM";
-    std::vector<std::pair<Table::FieldIndex, Table::ValueType> > field_sum;
+#ifdef TIMER
+    struct timespec ts1, ts2;
+#endif
+
 public:
-    using ComplexQuery::ComplexQuery;
+    using ConcurrentQuery::ConcurrentQuery;
+//    using ComplexQuery::ComplexQuery;
+    std::vector<std::pair<Table::FieldIndex, Table::ValueType> > field_sum;
+
+    std::mutex g_mutex;
 
     QueryResult::Ptr execute() override;
 
+    QueryResult::Ptr mergeAndPrint() override;
+
     std::string toString() override;
 
+    friend class SumTask;
+
     //bool modify() override { return false; }
+};
+
+class SumTask : public Task {
+public:
+    using Task::Task;
+    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_sum;
+    void execute() override;
 };
 
 #endif //PROJECT_SUMQUERY_H

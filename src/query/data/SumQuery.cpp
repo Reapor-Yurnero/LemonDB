@@ -31,6 +31,7 @@ QueryResult::Ptr SumQuery::execute() {
         db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
         this->field_sum.reserve(this->operands.size());
+
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(
@@ -41,6 +42,8 @@ QueryResult::Ptr SumQuery::execute() {
             }
         }
         auto result = initCondition(table);
+
+        /*
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
@@ -53,7 +56,18 @@ QueryResult::Ptr SumQuery::execute() {
         vector<Table::ValueType> sum_result;
         for (unsigned int i=0;i<this->field_sum.size();i++){
             sum_result.emplace_back(this->field_sum.at(i).second);
+        }*/
+
+        if (result.second) {
+            addTaskByPaging<SumTask>(table);
         }
+#ifdef TIMER
+        clock_gettime(CLOCK_MONOTONIC, &ts2);
+        cerr<<"SUM takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
+        return make_unique<SuccessMsgResult>(qname);
+
         // lcx
 //        int *sum = new int [this->operands.size()];
 ////        cout << "operands size is: " << this->operands.size() << endl;
@@ -73,12 +87,7 @@ QueryResult::Ptr SumQuery::execute() {
 //        }
 //        cout << ")" << '\n';
 //        free(sum);
-#ifdef TIMER
-        clock_gettime(CLOCK_MONOTONIC, &ts2);
-        cerr<<"SUM takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
-                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
-#endif
-        return std::make_unique<AnswerMsgResult>(sum_result);
+        //return std::make_unique<AnswerMsgResult>(sum_result);
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
@@ -95,4 +104,52 @@ QueryResult::Ptr SumQuery::execute() {
 
 std::string SumQuery::toString() {
     return "QUERY = SUM " + this->targetTable + "\"";
+}
+
+void SumTask::execute() {
+    auto real_query = dynamic_cast<SumQuery *>(query);
+    local_sum = real_query->field_sum;
+    for (auto table_it = begin; table_it != end; ++table_it) {
+        if (real_query->evalCondition(*table_it)) {
+            for (auto sum_it=local_sum.begin(); sum_it!=local_sum.end();++sum_it) {
+
+                (*sum_it).second+= (*table_it)[(*sum_it).first];
+//                std::cout<<"I add: " << (*table_it)[(*sum_it).first] << "\n";
+//                std::cerr<<"local sum size is:" << local_sum.size() << "\n";
+            }
+        }
+    }
+    //update the global sum
+    {
+        std::unique_lock<std::mutex> lock(real_query->g_mutex);
+        for (size_t i=0; i<local_sum.size();++i) {
+            real_query->field_sum[i].second+= local_sum[i].second;
+            std::cerr<<"local sum is: "<<local_sum[i].second << "\n";
+        }
+    }
+    real_query->mergeAndPrint();
+}
+
+QueryResult::Ptr SumQuery::mergeAndPrint() {
+    Database &db = Database::getInstance();
+    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+    ++complete_num;
+    if(complete_num < (int)concurrency_num){
+        return std::make_unique<NullQueryResult>();
+    }
+    std::vector<Table::ValueType> sum_result;
+    for (unsigned int i=0; i<this->field_sum.size(); i++){
+        sum_result.emplace_back(this->field_sum.at(i).second);
+        std::cerr << "I emplace back: " << this->field_sum.at(i).second << "\n";
+    }
+    db.addresult(this->id, std::make_unique<AnswerMsgResult>(sum_result));
+    db.table_locks[this->targetTable]->unlock();
+    //allow the next query to go
+    //std::cout<<"table lock released\n";
+#ifdef TIMER
+    clock_gettime(CLOCK_MONOTONIC, &ts2);
+    std::cerr<<"SUM takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
+    return std::make_unique<AnswerMsgResult>(sum_result);
 }
