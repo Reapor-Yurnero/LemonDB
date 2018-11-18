@@ -106,7 +106,7 @@ QueryResult::Ptr MinQuery::mergeAndPrint() {
     std::cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
-    return std::make_unique<AnswerMsgResult>(min_result);
+    return std::make_unique<NullQueryResult>();
 }
 
 std::string MinQuery::toString() {

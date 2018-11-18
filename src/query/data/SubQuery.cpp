@@ -50,6 +50,13 @@ QueryResult::Ptr SubQuery::execute() {
             }
         }
         auto result = initCondition(table);
+
+        if (result.second) {
+            addTaskByPaging<SubTask>(table);
+        }
+        return make_unique<SuccessMsgResult>(qname);
+
+        /*
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
@@ -62,6 +69,7 @@ QueryResult::Ptr SubQuery::execute() {
                 }
             }
         }
+         */
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"SUB takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
@@ -79,6 +87,53 @@ QueryResult::Ptr SubQuery::execute() {
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "Unkonwn error '?'."_f % e.what());
     }
+}
+
+
+
+void SubTask::execute() {
+    auto real_query = dynamic_cast<SubQuery *>(query);
+
+    for (auto it = begin; it != end; ++it) {
+        if (real_query->evalCondition(*it)) {
+            Table::ValueType res = (*it)[real_query->sub_victim];
+            for (auto srcitr = real_query->sub_src.begin();srcitr!=real_query->sub_src.end();++srcitr) {
+                res -= (*it)[*srcitr];
+            }
+            {
+                std::unique_lock<std::mutex> lock(real_query->write_mutex);
+                (*it)[real_query->sub_des] = res;
+            }
+
+            ++this->counter;
+        }
+    }
+
+    {
+        std::unique_lock<std::mutex> lock(real_query->g_mutex);
+        real_query->counter += this->counter;
+    }
+    real_query->mergeAndPrint();
+}
+
+QueryResult::Ptr SubQuery::mergeAndPrint() {
+    Database &db = Database::getInstance();
+    //auto &table = db[this->targetTable];
+    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+    ++complete_num;
+    if(complete_num < (int)concurrency_num){
+        return std::make_unique<NullQueryResult>();
+    }
+    db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
+    db.table_locks[this->targetTable]->unlock();
+    //allow the next query to go
+    //std::cout<<"table lock released\n";
+#ifdef TIMER
+    clock_gettime(CLOCK_MONOTONIC, &ts2);
+    std::cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
+    return std::make_unique<NullQueryResult>();
 }
 
 std::string SubQuery::toString() {

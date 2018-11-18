@@ -22,6 +22,7 @@ QueryResult::Ptr CopyTableQuery::execute() {
     clock_gettime(CLOCK_MONOTONIC, &ts1);
 #endif
     Database &db = Database::getInstance();
+    db.table_locks[this->targetTable]->lock();
     string new_table_tmp = new_table;
     try {
         std::string tableName = this->targetTable;
@@ -32,6 +33,8 @@ QueryResult::Ptr CopyTableQuery::execute() {
         cerr<<"COPY takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
+        db.addresult(this->id,make_unique<SuccessMsgResult>(0));
+        db.table_locks[this->targetTable]->unlock();
         return make_unique<SuccessMsgResult>(0);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());

@@ -52,6 +52,8 @@ QueryResult::Ptr UpdateQuery::execute() {
         cerr<<"UPDATE takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
+        db.addresult(this->id,make_unique<RecordCountResult>(counter));
+        db.table_locks[this->targetTable]->unlock();
         return make_unique<RecordCountResult>(counter);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);

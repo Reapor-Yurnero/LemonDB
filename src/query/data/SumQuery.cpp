@@ -78,6 +78,8 @@ QueryResult::Ptr SumQuery::execute() {
         cerr<<"SUM takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
+        db.addresult(this->id,make_unique<AnswerMsgResult>(sum_result));
+        db.table_locks[this->targetTable]->unlock();
         return std::make_unique<AnswerMsgResult>(sum_result);
     }
     catch (const TableNameNotFound &e) {
