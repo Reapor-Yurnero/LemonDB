@@ -15,5 +15,6 @@ QueryResult::Ptr QuitQuery::execute() {
     auto &db = Database::getInstance();
     db.exit();
     // might not reach here, but we want to keep the consistency of queries
+    db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
     return std::make_unique<SuccessMsgResult>(qname);
 }

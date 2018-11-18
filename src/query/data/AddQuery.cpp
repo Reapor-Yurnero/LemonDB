@@ -28,7 +28,6 @@ QueryResult::Ptr AddQuery::execute() {
                 "Invalid number of operands (? operands)."_f % operands.size()
         );
     Database &db = Database::getInstance();
-    Table::SizeType counter = 0;
     try {
         db.table_locks[this->targetTable]->lock();
         this->add_src.reserve(this->operands.size()-1);
@@ -48,6 +47,15 @@ QueryResult::Ptr AddQuery::execute() {
             }
         }
         auto result = initCondition(table);
+
+
+        if (result.second) {
+            addTaskByPaging<AddTask>(table);
+        }
+        return make_unique<SuccessMsgResult>(qname);
+
+
+        /*
         if (result.second) {
             for (auto it = table.begin(); it != table.end(); ++it) {
                 if (this->evalCondition(*it)) {
@@ -59,13 +67,16 @@ QueryResult::Ptr AddQuery::execute() {
                     ++counter;
                 }
             }
+            db.table_locks[this->targetTable]->unlock();
         }
+        */
+
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"ADD takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
-        return make_unique<RecordCountResult>(counter);
+        return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
@@ -77,6 +88,51 @@ QueryResult::Ptr AddQuery::execute() {
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "Unkonwn error '?'."_f % e.what());
     }
+}
+
+
+void AddTask::execute() {
+    auto real_query = dynamic_cast<AddQuery *>(query);
+
+    for (auto it = begin; it != end; ++it) {
+        if (real_query->evalCondition(*it)) {
+            Table::ValueType sum = 0;
+            for (auto srcitr = real_query->add_src.begin();srcitr!=real_query->add_src.end();++srcitr) {
+                sum += (*it)[*srcitr];
+            }
+            {
+                std::unique_lock<std::mutex> lock(real_query->write_mutex);
+                (*it)[real_query->add_des] = sum;
+            }
+            ++this->counter;
+        }
+    }
+
+    {
+        std::unique_lock<std::mutex> lock(real_query->g_mutex);
+        real_query->counter += this->counter;
+    }
+    real_query->mergeAndPrint();
+}
+
+QueryResult::Ptr AddQuery::mergeAndPrint() {
+    Database &db = Database::getInstance();
+    //auto &table = db[this->targetTable];
+    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+    ++complete_num;
+    if(complete_num < (int)concurrency_num){
+        return std::make_unique<NullQueryResult>();
+    }
+    db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
+    db.table_locks[this->targetTable]->unlock();
+    //allow the next query to go
+    //std::cout<<"table lock released\n";
+#ifdef TIMER
+    clock_gettime(CLOCK_MONOTONIC, &ts2);
+    std::cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
+    return std::make_unique<NullQueryResult>();
 }
 
 std::string AddQuery::toString() {

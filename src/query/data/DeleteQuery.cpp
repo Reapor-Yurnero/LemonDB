@@ -84,6 +84,7 @@ QueryResult::Ptr DeleteQuery::mergeAndPrint() {
         counter += task->getCounter();
     }
     table.updateByCache();
+    db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
     db.table_locks[this->targetTable]->unlock();
     return std::make_unique<RecordCountResult>(counter);
 }
