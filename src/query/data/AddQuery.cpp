@@ -136,7 +136,7 @@ QueryResult::Ptr AddQuery::mergeAndPrint() {
     std::cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
-    db.queries[this->id].reset();
+    //db.queries[this->id].reset();
     return std::make_unique<NullQueryResult>();
 }
 

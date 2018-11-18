@@ -163,13 +163,13 @@ int main(int argc, char *argv[]) {
             Query::Ptr query = p.parseQuery(queryStr);
             auto q = query.get();
             q->assignid(counter+1);
-            std::cerr << counter << "\n";
+            std::cerr << counter+1 << "\n";
             //QueryResult::Ptr result = query->execute();
             db.queries.emplace(counter+1,std::move(query));
 
-            std::cerr << "here\n";
+            //std::cerr << "here\n";
             QueryResult::Ptr result = q->execute();
-            std::cerr << "here2\n";
+            //std::cerr << "here2\n";
             //todo@ now output is done in db.exit().
             ++counter;
             if (result->success()) {

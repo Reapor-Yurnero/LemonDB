@@ -28,9 +28,9 @@ QueryResult::Ptr UpdateQuery::execute() {
     Database &db = Database::getInstance();
     Table::SizeType counter = 0;
     try {
-        std::cerr << "sub before lock\n";
+        //std::cerr << "sub before lock\n";
         db.table_locks[this->targetTable]->lock();
-        std::cerr << "sub after lock\n";
+        //std::cerr << "sub after lock\n";
         auto &table = db[this->targetTable];
         if (this->operands[0] == "KEY") {
             this->keyValue = this->operands[1];

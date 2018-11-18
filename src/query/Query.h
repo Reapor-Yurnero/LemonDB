@@ -123,7 +123,7 @@ public:
                     auto newTask = std::unique_ptr<RealTask>(new RealTask(this, begin, end, &table));
                     auto newTaskPtr = newTask.get();
                     subTasks.emplace_back(std::move(newTask));
-                    std::cerr << newTaskPtr->query->id<<"sub into task!\n" ;
+                    //std::cerr << newTaskPtr->query->id<<"sub into task!\n" ;
                     threadPool.addTask(newTaskPtr);
                     begin = end;
                 }
