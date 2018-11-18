@@ -53,6 +53,7 @@ QueryResult::Ptr AddQuery::execute() {
             addTaskByPaging<AddTask>(table);
         }
         else{
+            db.addresult(this->id,std::make_unique<RecordCountResult>(0));
             db.table_locks[this->targetTable]->unlock();
         }
         return make_unique<SuccessMsgResult>(qname);

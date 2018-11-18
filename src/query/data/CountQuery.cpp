@@ -38,6 +38,7 @@ QueryResult::Ptr CountQuery::execute() {
             addTaskByPaging<CountTask>(table);
         }
         else{
+            db.addresult(this->id,std::make_unique<AnswerMsgResult>(0));
             db.table_locks[this->targetTable]->unlock();
         }
 #ifdef TIMER

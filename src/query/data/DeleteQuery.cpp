@@ -36,6 +36,7 @@ QueryResult::Ptr DeleteQuery::execute() {
             addTaskByPaging<DeleteTask>(table);
         }
         else{
+            db.addresult(this->id,std::make_unique<RecordCountResult>(0));
             db.table_locks[this->targetTable]->unlock();
         }
 /*

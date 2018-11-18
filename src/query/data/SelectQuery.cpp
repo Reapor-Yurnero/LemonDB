@@ -35,6 +35,7 @@ QueryResult::Ptr SelectQuery::execute() {
             );
         auto result = initCondition(table);
         //map<Table::KeyType, vector<Table::ValueType *> > selectAnswer;
+        cerr<<result.second<<endl;
         if (result.second) {
             /*
             for (auto table_it = table.begin(); table_it != table.end(); ++table_it) {

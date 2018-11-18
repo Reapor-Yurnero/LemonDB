@@ -50,6 +50,7 @@ QueryResult::Ptr MinQuery::execute() {
             addTaskByPaging<MinTask>(table);
         }
         else{
+            db.addresult(this->id,std::make_unique<NullQueryResult>());
             db.table_locks[this->targetTable]->unlock();
         }
         return make_unique<SuccessMsgResult>(qname);
