@@ -52,6 +52,7 @@ QueryResult::Ptr MinQuery::execute() {
         else{
             db.addresult(this->id,std::make_unique<NullQueryResult>());
             db.table_locks[this->targetTable]->unlock();
+            db.queries.erase(this->id);
         }
         return make_unique<SuccessMsgResult>(qname);
     }
@@ -112,6 +113,7 @@ QueryResult::Ptr MinQuery::mergeAndPrint() {
     }
     db.addresult(this->id,std::make_unique<AnswerMsgResult>(min_result));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(this->id);
     //allow the next query to go
     //std::cout<<"table lock released\n";
 #ifdef TIMER

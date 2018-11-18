@@ -30,6 +30,7 @@ QueryResult::Ptr DropTableQuery::execute() {
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname));
         db.table_locks[this->targetTable]->unlock();
         db.table_locks.erase(this->targetTable);
+        db.queries.erase(this->id);
         return make_unique<SuccessMsgResult>(qname);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, targetTable, "No such table."s);

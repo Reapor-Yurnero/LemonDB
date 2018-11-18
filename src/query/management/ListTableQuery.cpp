@@ -14,6 +14,7 @@ QueryResult::Ptr ListTableQuery::execute() {
     db.printAllTable();
     db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(this->id);
     return std::make_unique<SuccessMsgResult>(qname);
 }
 

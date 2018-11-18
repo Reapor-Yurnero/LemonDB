@@ -77,6 +77,7 @@ QueryResult::Ptr CountQuery::mergeAndPrint() {
     }
     db.addresult(this->id,std::make_unique<AnswerMsgResult>(this->countresult));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(this->id);
     return std::make_unique<NullQueryResult>();
 }
 

@@ -53,6 +53,7 @@ QueryResult::Ptr SelectQuery::execute() {
         }
         else{
             db.table_locks[this->targetTable]->unlock();
+            db.queries.erase(this->id);
         }
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
@@ -96,6 +97,7 @@ QueryResult::Ptr SelectQuery::mergeAndPrint() {
     else
         db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(this->id);
     return std::make_unique<NullQueryResult>();
 }
 

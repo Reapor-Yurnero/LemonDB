@@ -38,6 +38,7 @@ QueryResult::Ptr DeleteQuery::execute() {
         else{
             db.addresult(this->id,std::make_unique<RecordCountResult>(0));
             db.table_locks[this->targetTable]->unlock();
+            db.queries.erase(this->id);
         }
 /*
         if (result.second) {
@@ -90,6 +91,7 @@ QueryResult::Ptr DeleteQuery::mergeAndPrint() {
     table.updateByCache();
     db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(this->id);
     return std::make_unique<RecordCountResult>(counter);
 }
 

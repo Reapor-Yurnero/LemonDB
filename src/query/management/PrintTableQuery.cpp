@@ -21,6 +21,7 @@ QueryResult::Ptr PrintTableQuery::execute() {
         cout << "================\n" << endl;
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname, this->targetTable));
         db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<SuccessMsgResult>(qname, this->targetTable);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);

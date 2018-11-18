@@ -65,6 +65,7 @@ QueryResult::Ptr SubQuery::execute() {
         else{
             db.addresult(this->id,std::make_unique<RecordCountResult>(0));
             db.table_locks[this->targetTable]->unlock();
+            db.queries.erase(this->id);
         }
         return make_unique<SuccessMsgResult>(qname);
 
@@ -146,6 +147,7 @@ QueryResult::Ptr SubQuery::mergeAndPrint() {
     //std::cerr<<this->targetTable <<"    "<< this->id<< "endstilllock!\n"  ;
     db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(this->id);
     //std::cerr<<this->targetTable <<"    "<< this->id<< "unlock!\n"  ;
     //allow the next query to go
     //std::cout<<"table lock released\n";

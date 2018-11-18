@@ -36,6 +36,7 @@ QueryResult::Ptr DumpTableQuery::execute() {
 #endif
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname, targetTable));
         db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<SuccessMsgResult>(qname, targetTable);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());

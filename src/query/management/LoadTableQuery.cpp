@@ -60,6 +60,7 @@ std::string LoadTableQuery::toString() {
 void LoadTableQuery::addresult_to_db() {
     Database &db=Database::getInstance();
     db.table_locks[this->tablename]->unlock();
+    db.queries.erase(this->id);
     db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
 }
 
