@@ -8,7 +8,7 @@
 #include "../Query.h"
 
 class CountQuery : public ConcurrentQuery {
-    static constexpr const char *qname = "DELETE";
+    static constexpr const char *qname = "COUNT";
 public:
     using ConcurrentQuery::ConcurrentQuery;
 

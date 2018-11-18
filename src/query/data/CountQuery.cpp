@@ -25,7 +25,6 @@ QueryResult::Ptr CountQuery::execute() {
                 "Too many operands for count"
         );
     Database &db = Database::getInstance();
-    Table::SizeType counter = 0;
     try{
         db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
@@ -43,9 +42,7 @@ QueryResult::Ptr CountQuery::execute() {
         cerr<<"COUNT takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
-        db.addresult(this->id,make_unique<AnswerMsgResult>(counter));
-        db.table_locks[this->targetTable]->unlock();
-        return make_unique<SuccessMsgResult>(counter);
+        return make_unique<SuccessMsgResult>(qname);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
     } catch (const IllFormedQueryCondition &e) {
