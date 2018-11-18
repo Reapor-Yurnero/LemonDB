@@ -119,14 +119,15 @@ void SubTask::execute() {
                 (*it)[real_query->sub_des] = res;
             }
 
-            ++this->local_counter;
+            ++this->counter;
         }
     }
-
+/*
     {
         std::unique_lock<std::mutex> lock(real_query->g_mutex);
         real_query->counter += this->local_counter;
     }
+    */
     real_query->mergeAndPrint();
 }
 
@@ -138,6 +139,9 @@ QueryResult::Ptr SubQuery::mergeAndPrint() {
     ++complete_num;
     if(complete_num < (int)concurrency_num){
         return std::make_unique<NullQueryResult>();
+    }
+    for(const auto &task:subTasks){
+        counter += task->getCounter();
     }
     //std::cerr<<this->targetTable <<"    "<< this->id<< "endstilllock!\n"  ;
     db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
