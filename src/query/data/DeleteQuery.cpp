@@ -18,6 +18,7 @@ QueryResult::Ptr DeleteQuery::execute() {
 #endif
     Database &db = Database::getInstance();
     if (!this->operands.empty()) {
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),

@@ -24,6 +24,7 @@ QueryResult::Ptr InsertQuery::execute() {
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
         db.queries.erase(this->id);
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "No operand (? operands)."_f % operands.size()

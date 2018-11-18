@@ -23,6 +23,7 @@ QueryResult::Ptr UpdateQuery::execute() {
     Database &db = Database::getInstance();
     if (this->operands.size() != 2) {
         db.queries.erase(this->id);
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "Invalid number of operands (? operands)."_f % operands.size()

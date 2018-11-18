@@ -24,6 +24,7 @@ QueryResult::Ptr MaxQuery::execute() {
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
         db.queries.erase(this->id);
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "No operand (? operands)."_f % operands.size()
@@ -45,6 +46,8 @@ QueryResult::Ptr MaxQuery::execute() {
 
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
+                db.queries.erase(this->id);
+                db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Invalid Argument."));
                 throw invalid_argument(
                         R"(Can not input KEY for MAX.)"_f
                 );
@@ -143,7 +146,7 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
         for (unsigned int i=0;i<this->max.size();i++){
             max_result.emplace_back(this->max.at(i).second);
         }
-        db.addresult(this->id,std::make_unique<AnswerMsgResult>(max_result));
+        db.addresult(this->id,std::make_unique<AnswerMsgResult>(std::move(max_result)));
     }
     else {
         db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));

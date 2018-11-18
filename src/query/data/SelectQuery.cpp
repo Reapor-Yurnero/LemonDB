@@ -23,6 +23,7 @@ QueryResult::Ptr SelectQuery::execute() {
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
         db.queries.erase(this->id);
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "No operand (? operands)."_f % operands.size()
@@ -38,10 +39,13 @@ QueryResult::Ptr SelectQuery::execute() {
         }
         db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
-        if (this->operands[0] != "KEY")
+        if (this->operands[0] != "KEY") {
+            db.queries.erase(this->id);
+            db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Invalid Argument."));
             return make_unique<ErrorMsgResult>(
                     qname, "The beginning field is not KEY"
             );
+        }
         auto result = initCondition(table);
         //map<Table::KeyType, vector<Table::ValueType *> > selectAnswer;
         //cerr<<result.second<<endl;
@@ -102,7 +106,7 @@ QueryResult::Ptr SelectQuery::mergeAndPrint() {
         }
     }
     if(!selectAnswer.empty())
-        db.addresult(this->id,std::make_unique<AnswerMsgResult>(move(selectAnswer)));
+        db.addresult(this->id,std::make_unique<AnswerMsgResult>(std::move(selectAnswer)));
     else
         db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
     db.table_locks[this->targetTable]->unlock();

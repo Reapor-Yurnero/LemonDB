@@ -26,6 +26,7 @@ QueryResult::Ptr SubQuery::execute() {
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
         db.queries.erase(this->id);
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "Invalid number of operands (? operands)."_f % operands.size()
@@ -49,6 +50,8 @@ QueryResult::Ptr SubQuery::execute() {
         //std::cerr<<this->targetTable <<"    "<< this->id<< "addtask1!\n"  ;
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
+                db.queries.erase(this->id);
+                db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Invalid Argument."));
                 throw invalid_argument(
                         R"(Can not input KEY for SUB.)"_f
                 );

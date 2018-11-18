@@ -24,6 +24,7 @@ QueryResult::Ptr SumQuery::execute() {
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
         db.queries.erase(this->id);
+        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "No operand (? operands)."_f % operands.size()
@@ -42,6 +43,8 @@ QueryResult::Ptr SumQuery::execute() {
         this->field_sum.reserve(this->operands.size());
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
+                db.queries.erase(this->id);
+                db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Invalid Argument."));
                 throw invalid_argument(
                         R"(Can not input KEY for SUM.)"_f
                 );
