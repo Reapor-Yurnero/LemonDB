@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
      *      real task such as Query operators
      * }
      */
-    std::vector<Query::Ptr> queries;
+    Database &db=Database::getInstance();
     std::ifstream listenFile;
     while (is) {
         try {
@@ -163,9 +163,13 @@ int main(int argc, char *argv[]) {
             Query::Ptr query = p.parseQuery(queryStr);
             auto q = query.get();
             q->assignid(counter+1);
+            std::cerr << counter << "\n";
             //QueryResult::Ptr result = query->execute();
-            queries.emplace_back(std::move(query));
+            db.queries.emplace(counter+1,std::move(query));
+
+            std::cerr << "here\n";
             QueryResult::Ptr result = q->execute();
+            std::cerr << "here2\n";
             //todo@ now output is done in db.exit().
             ++counter;
             if (result->success()) {

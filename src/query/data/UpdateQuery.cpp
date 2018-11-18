@@ -5,6 +5,7 @@
 #include "UpdateQuery.h"
 #include "../../db/Database.h"
 
+#include <iostream>
 #ifdef TIMER
 #include <iostream>
 
@@ -13,6 +14,7 @@
 constexpr const char *UpdateQuery::qname;
 
 QueryResult::Ptr UpdateQuery::execute() {
+
     using namespace std;
 #ifdef TIMER
     struct timespec ts1, ts2;
@@ -26,7 +28,9 @@ QueryResult::Ptr UpdateQuery::execute() {
     Database &db = Database::getInstance();
     Table::SizeType counter = 0;
     try {
+        std::cerr << "sub before lock\n";
         db.table_locks[this->targetTable]->lock();
+        std::cerr << "sub after lock\n";
         auto &table = db[this->targetTable];
         if (this->operands[0] == "KEY") {
             this->keyValue = this->operands[1];

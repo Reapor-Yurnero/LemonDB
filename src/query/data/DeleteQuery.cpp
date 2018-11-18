@@ -35,6 +35,9 @@ QueryResult::Ptr DeleteQuery::execute() {
         if (result.second) {
             addTaskByPaging<DeleteTask>(table);
         }
+        else{
+            db.table_locks[this->targetTable]->unlock();
+        }
 /*
         if (result.second) {
             for (auto it = table.begin(); it != table.end();) {

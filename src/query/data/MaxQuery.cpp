@@ -65,6 +65,9 @@ QueryResult::Ptr MaxQuery::execute() {
         if (result.second) {
             addTaskByPaging<MaxTask>(table);
         }
+        else{
+            db.table_locks[this->targetTable]->unlock();
+        }
         return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {

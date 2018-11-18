@@ -12,6 +12,7 @@
 #include "../threadmanage/ThreadPool.h"
 #include "../db/Database.h"
 
+#include <iostream>
 #include <functional>
 #include <memory>
 #include <string>
@@ -96,7 +97,7 @@ public:
     void addTaskByPaging(Table &table){
         //todo: Adjust page_size to a proper value
         ThreadPool &threadPool = ThreadPool::getPool();
-        unsigned int page_size = 5000;
+        unsigned int page_size = 10000;
         size_t total_size = table.size();
         auto begin = table.begin();
         decltype(begin) end;
@@ -122,6 +123,7 @@ public:
                     auto newTask = std::unique_ptr<RealTask>(new RealTask(this, begin, end, &table));
                     auto newTaskPtr = newTask.get();
                     subTasks.emplace_back(std::move(newTask));
+                    std::cerr << newTaskPtr->query->id<<"sub into task!\n" ;
                     threadPool.addTask(newTaskPtr);
                     begin = end;
                 }

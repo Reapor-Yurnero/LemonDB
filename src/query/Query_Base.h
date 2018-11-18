@@ -16,9 +16,11 @@ class Query {
 
 protected:
     std::string targetTable;
-    int id = -1;
+
 
 public:
+    int id = -1;
+
     Query() = default;
 
     explicit Query(std::string targetTable) : targetTable(std::move(targetTable)) {}

@@ -37,6 +37,9 @@ QueryResult::Ptr CountQuery::execute() {
 //            }
             addTaskByPaging<CountTask>(table);
         }
+        else{
+            db.table_locks[this->targetTable]->unlock();
+        }
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"COUNT takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
@@ -63,10 +66,12 @@ std::string CountQuery::toString() {
 
 QueryResult::Ptr CountQuery::mergeAndPrint() {
     Database &db = Database::getInstance();
-    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
-    ++complete_num;
-    if(complete_num < (int)concurrency_num){
-        return std::make_unique<NullQueryResult>();
+    {
+        std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+        ++complete_num;
+        if(complete_num < (int)concurrency_num){
+            return std::make_unique<NullQueryResult>();
+        }
     }
     db.addresult(this->id,std::make_unique<AnswerMsgResult>(this->countresult));
     db.table_locks[this->targetTable]->unlock();

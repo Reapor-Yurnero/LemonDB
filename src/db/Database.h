@@ -48,6 +48,8 @@ private:
     std::mutex table_lock_mutex;
 
 public:
+    std::unordered_map<int,Query::Ptr> queries;
+
     std::unordered_map<std::string,std::unique_ptr<std::mutex>> table_locks;
 
     void add_table_lock(std::string tablename){
