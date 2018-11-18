@@ -110,11 +110,12 @@ void AddTask::execute() {
             ++this->counter;
         }
     }
-
+/*
     {
         std::unique_lock<std::mutex> lock(real_query->g_mutex);
         real_query->counter += this->counter;
     }
+    */
     real_query->mergeAndPrint();
 }
 
@@ -125,6 +126,9 @@ QueryResult::Ptr AddQuery::mergeAndPrint() {
     ++complete_num;
     if(complete_num < (int)concurrency_num){
         return std::make_unique<NullQueryResult>();
+    }
+    for(const auto &task:subTasks){
+        counter += task->getCounter();
     }
     db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
 
