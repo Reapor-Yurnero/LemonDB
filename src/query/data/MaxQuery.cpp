@@ -9,7 +9,7 @@
 #include <algorithm>
 
 // open counter for MAX solely
-// #define TIMER
+
 #include <iostream>
 
 #include <unistd.h>
@@ -19,7 +19,6 @@ constexpr const char *MaxQuery::qname;
 QueryResult::Ptr MaxQuery::execute() {
     using namespace std;
 #ifdef TIMER
-    struct timespec ts1, ts2;
     clock_gettime(CLOCK_MONOTONIC, &ts1);
 #endif
     if (this->operands.empty())
@@ -32,7 +31,8 @@ QueryResult::Ptr MaxQuery::execute() {
         /*this->max.clear();*/
         this->max.reserve(this->operands.size());
         auto &table = db[this->targetTable];
-        std::unique_lock<std::mutex> writeLocker(table.writeLock);
+        table.writeLock.lock();
+        //std::cout<<"table lock acquired\n";
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
                 throw invalid_argument(
@@ -63,12 +63,6 @@ QueryResult::Ptr MaxQuery::execute() {
         if (result.second) {
             addTaskByPaging<MaxTask>(table);
         }
-        
-#ifdef TIMER
-        clock_gettime(CLOCK_MONOTONIC, &ts2);
-        cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
-                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
-#endif
         return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {
@@ -117,8 +111,6 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
     if(complete_num < (int)concurrency_num){
         return std::make_unique<NullQueryResult>();
     }
-    //allow the next query to go
-    table.writeLock.unlock();
     std::vector<Table::ValueType> max_result;
     for (unsigned int i=0;i<this->max.size();i++){
         max_result.emplace_back(this->max.at(i).second);
@@ -127,6 +119,14 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
     for (auto result : max_result) {
         std::cout << result << " ";
     }
-    std::cout << ") ";
+    std::cout << ") \n";
+    //allow the next query to go
+    table.writeLock.unlock();
+    //std::cout<<"table lock released\n";
+#ifdef TIMER
+    clock_gettime(CLOCK_MONOTONIC, &ts2);
+    std::cerr<<"MAX takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
+                             - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
+#endif
     return std::make_unique<AnswerMsgResult>(max_result);
 }

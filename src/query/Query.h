@@ -115,7 +115,7 @@ public:
                     concurrency_num = total_size / page_size +1;
                 for(unsigned long i=0;i<concurrency_num;i++){
                     if(residue != 0 && i == concurrency_num-1){
-                        end = begin + residue;
+                        end = table.end();
                     } else
                         end = begin + page_size;
                     auto newTask = std::unique_ptr<RealTask>(new RealTask(this, begin, end, &table));

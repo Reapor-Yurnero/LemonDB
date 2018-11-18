@@ -6,10 +6,13 @@
 #define PROJECT_MAXQUERY_H
 
 #include "../Query.h"
-
+//#define TIMER
 
 class MaxQuery : public ConcurrentQuery {
     static constexpr const char *qname = "MAX";
+#ifdef TIMER
+    struct timespec ts1, ts2;
+#endif
 
 public:
     using ConcurrentQuery::ConcurrentQuery;
