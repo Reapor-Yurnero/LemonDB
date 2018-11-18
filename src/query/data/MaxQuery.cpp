@@ -31,7 +31,13 @@ QueryResult::Ptr MaxQuery::execute() {
     }
     try {
         /*this->max.clear();*/
-
+        if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
+            db.queries.erase(this->id);
+            db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
+            throw TableNameNotFound(
+                    "Error accesing table \"" + this->targetTable + "\". Table not found."
+            );
+        }
         db.table_locks[this->targetTable]->lock();
 
         this->max.reserve(this->operands.size());

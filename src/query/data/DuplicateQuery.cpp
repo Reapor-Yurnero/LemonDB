@@ -30,6 +30,13 @@ QueryResult::Ptr DuplicateQuery::execute() {
     }
     Table::SizeType  counter = 0;
     try{
+        if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
+            db.queries.erase(this->id);
+            db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
+            throw TableNameNotFound(
+                    "Error accesing table \"" + this->targetTable + "\". Table not found."
+            );
+        }
         db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];
         auto result = initCondition(table);
