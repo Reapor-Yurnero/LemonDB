@@ -229,7 +229,7 @@ Table &Database::loadTableContentFromStream(std::istream &is, std::string source
 void Database::exit() {
     // wait for all the table task to complete
     for (const auto &table : this->tables){
-        this->table_locks[table.first]->try_lock();
+        this->table_locks[table.first]->lock();
     }
     for(unsigned int i=1;i<this->queryresults.size()+1;i++) {
         std::cout << i << "\n";
