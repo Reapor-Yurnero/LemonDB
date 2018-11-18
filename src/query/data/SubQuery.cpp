@@ -53,7 +53,8 @@ QueryResult::Ptr SubQuery::execute() {
 
         if (result.second) {
             addTaskByPaging<SubTask>(table);
-        }
+        } else
+            db.table_locks[this->targetTable]->unlock();
         return make_unique<SuccessMsgResult>(qname);
 
         /*

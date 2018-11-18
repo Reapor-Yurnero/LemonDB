@@ -50,6 +50,8 @@ QueryResult::Ptr SelectQuery::execute() {
              */
             addTaskByPaging<SelectTask>(table);
         }
+        else
+            db.table_locks[this->targetTable]->unlock();
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"SELECT takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec

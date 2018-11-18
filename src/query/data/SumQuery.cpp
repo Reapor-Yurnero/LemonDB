@@ -49,7 +49,8 @@ QueryResult::Ptr SumQuery::execute() {
                     }
                 }
             }
-        }
+        }else
+            db.table_locks[this->targetTable]->unlock();
         vector<Table::ValueType> sum_result;
         for (unsigned int i=0;i<this->field_sum.size();i++){
             sum_result.emplace_back(this->field_sum.at(i).second);

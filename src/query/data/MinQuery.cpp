@@ -48,7 +48,8 @@ QueryResult::Ptr MinQuery::execute() {
         auto result = initCondition(table);
         if (result.second) {
             addTaskByPaging<MinTask>(table);
-        }
+        }else
+            db.table_locks[this->targetTable]->unlock();
         return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {

@@ -36,7 +36,8 @@ QueryResult::Ptr CountQuery::execute() {
 //                    ++counter;
 //            }
             addTaskByPaging<CountTask>(table);
-        }
+        }else
+            db.table_locks[this->targetTable]->unlock();
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
         cerr<<"COUNT takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec

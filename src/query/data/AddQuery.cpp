@@ -51,7 +51,8 @@ QueryResult::Ptr AddQuery::execute() {
 
         if (result.second) {
             addTaskByPaging<AddTask>(table);
-        }
+        }else
+            db.table_locks[this->targetTable]->unlock();
         return make_unique<SuccessMsgResult>(qname);
 
 
