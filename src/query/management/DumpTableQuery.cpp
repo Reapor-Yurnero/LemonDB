@@ -22,6 +22,7 @@ QueryResult::Ptr DumpTableQuery::execute() {
 #endif
     auto &db = Database::getInstance();
     try {
+        db.table_locks[this->targetTable]->lock();
         ofstream outfile(this->fileName);
         if (!outfile.is_open()) {
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
@@ -33,6 +34,8 @@ QueryResult::Ptr DumpTableQuery::execute() {
         cerr<<"DUMP takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
+        db.addresult(this->id,make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
         return make_unique<SuccessMsgResult>(qname, targetTable);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());
