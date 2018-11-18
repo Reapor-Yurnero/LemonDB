@@ -9,11 +9,12 @@
 
 class AddQuery : public ComplexQuery {
     static constexpr const char *qname = "ADD";
-    std::vector<Table::FieldIndex > add_src;
-    Table::FieldIndex add_des;
+
 public:
     using ComplexQuery::ComplexQuery;
 
+    std::vector<Table::FieldIndex > add_src;
+    Table::FieldIndex add_des;
     QueryResult::Ptr execute() override;
 
     std::string toString() override;

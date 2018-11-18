@@ -59,8 +59,8 @@ std::string LoadTableQuery::toString() {
 
 void LoadTableQuery::addresult_to_db() {
     Database &db=Database::getInstance();
-    db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
     db.table_locks[this->tablename]->unlock();
+    db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
 }
 
 void LoadTask::execute() {

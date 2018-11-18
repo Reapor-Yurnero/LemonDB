@@ -118,8 +118,8 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
         max_result.emplace_back(this->max.at(i).second);
     }
     db.addresult(this->id,std::make_unique<AnswerMsgResult>(max_result));
-    //allow the next query to go
     db.table_locks[this->targetTable]->unlock();
+    //allow the next query to go
     //std::cout<<"table lock released\n";
 #ifdef TIMER
     clock_gettime(CLOCK_MONOTONIC, &ts2);

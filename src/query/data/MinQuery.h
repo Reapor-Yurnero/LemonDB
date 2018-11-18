@@ -7,11 +7,14 @@
 
 #include "../Query.h"
 
-class MinQuery : public ComplexQuery {
+class MinQuery : public ConcurrentQuery {
     static constexpr const char *qname = "MIN";
+#ifdef TIMER
+    struct timespec ts1, ts2;
+#endif
 
 public:
-    using ComplexQuery::ComplexQuery;
+    using ConcurrentQuery::ConcurrentQuery;
 
     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> min;
 
@@ -19,10 +22,17 @@ public:
 
     QueryResult::Ptr execute() override;
 
+    QueryResult::Ptr mergeAndPrint() override;
+
     std::string toString() override;
 
     //bool modify() override { return false; }
 };
 
-
+class MinTask : public Task {
+public:
+    using Task::Task;
+    std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_min;
+    void execute() override;
+};
 #endif //PROJECT_MINQUERY_H
