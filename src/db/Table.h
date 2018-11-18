@@ -360,13 +360,13 @@ public:
 
     void erase_marked(const Iterator &iterator){
         std::unique_lock<std::mutex> cacheLocker(cacheLock);
-        keyMap.erase(iterator.it->key);
+        keyMap.erase((iterator.it)->key);
     }
 
     void loadToCache(Iterator &iterator){
         std::unique_lock<std::mutex> cacheLocker(cacheLock);
         keyMap.at(iterator.it->key) = cache.size();
-        cache.emplace_back(std::move(*iterator.it));
+        cache.emplace_back(std::move(*(iterator.it)));
     }
 
     bool copyToCache(Iterator &iterator){

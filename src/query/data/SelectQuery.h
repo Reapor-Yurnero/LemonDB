@@ -7,16 +7,31 @@
 
 #include "../Query.h"
 
-class SelectQuery : public ComplexQuery {
+class SelectQuery : public ConcurrentQuery {
     static constexpr const char *qname = "SELECT";
 public:
-    using ComplexQuery::ComplexQuery;
+    using ConcurrentQuery::ConcurrentQuery;
 
     QueryResult::Ptr execute() override;
 
     std::string toString() override;
 
-    //bool modify() override { return false; }
+    QueryResult::Ptr mergeAndPrint() override;
+
+    //std::mutex answerLock;
+
+    std::map<Table::KeyType, std::vector<Table::ValueType *> > selectAnswer;
+
+    friend class SelectTask;
+};
+
+class SelectTask : public Task {
+    using Task::Task;
+
+    void execute() override;
+
+public:
+    std::map<Table::KeyType, std::vector<Table::ValueType *> > localAnswer;
 };
 
 
