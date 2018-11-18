@@ -32,6 +32,7 @@ public:
 class MinTask : public Task {
 public:
     using Task::Task;
+    bool findsomething = false;
     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_min;
     void execute() override;
 };

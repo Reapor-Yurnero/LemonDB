@@ -93,6 +93,7 @@ void MaxTask::execute() {
     local_max = real_query->max;
     for (auto table_it = begin;table_it != end;++table_it) {
         if (real_query->evalCondition(*table_it)) {
+            findsomething |= true;
             for (auto max_it=local_max.begin();max_it!=local_max.end();++max_it) {
                 if ( (*table_it)[(*max_it).first] > (*max_it).second )
                     (*max_it).second = (*table_it)[(*max_it).first];
@@ -120,18 +121,25 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
     if(complete_num < (int)concurrency_num){
         return std::make_unique<NullQueryResult>();
     }
+    bool queryresultnonempty = false;
     for(const auto &task:subTasks){
         auto real_task = dynamic_cast<MaxTask *>(task.get());
+        queryresultnonempty |= real_task->findsomething;
         for (size_t i=0;i<real_task->local_max.size();i++){
             if(real_task->local_max[i].second > max[i].second)
                 std::swap(real_task->local_max[i].second, max[i].second);
         }
     }
-    std::vector<Table::ValueType> max_result;
-    for (unsigned int i=0;i<this->max.size();i++){
-        max_result.emplace_back(this->max.at(i).second);
+    if (queryresultnonempty) {
+        std::vector<Table::ValueType> max_result;
+        for (unsigned int i=0;i<this->max.size();i++){
+            max_result.emplace_back(this->max.at(i).second);
+        }
+        db.addresult(this->id,std::make_unique<AnswerMsgResult>(max_result));
     }
-    db.addresult(this->id,std::make_unique<AnswerMsgResult>(max_result));
+    else {
+        db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
+    }
     db.table_locks[this->targetTable]->unlock();
     db.queries.erase(this->id);
     //allow the next query to go

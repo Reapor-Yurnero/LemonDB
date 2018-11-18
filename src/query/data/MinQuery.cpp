@@ -73,6 +73,7 @@ void MinTask::execute() {
     local_min = real_query->min;
     for (auto table_it = begin;table_it != end;++table_it) {
         if (real_query->evalCondition(*table_it)) {
+            findsomething |= true;
             for (auto min_it=local_min.begin();min_it!=local_min.end();++min_it) {
                 if ( (*table_it)[(*min_it).first] < (*min_it).second )
                     (*min_it).second = (*table_it)[(*min_it).first];
@@ -100,18 +101,25 @@ QueryResult::Ptr MinQuery::mergeAndPrint() {
     if(complete_num < (int)concurrency_num){
         return std::make_unique<NullQueryResult>();
     }
+    bool queryresultnonempty = false;
     for(const auto &task:subTasks){
         auto real_task = dynamic_cast<MinTask *>(task.get());
+        queryresultnonempty |= real_task->findsomething;
         for (size_t i=0;i<real_task->local_min.size();i++){
             if(real_task->local_min[i].second < min[i].second)
                 std::swap(real_task->local_min[i].second, min[i].second);
         }
     }
-    std::vector<Table::ValueType> min_result;
-    for (unsigned int i=0;i<this->min.size();i++){
-        min_result.emplace_back(this->min.at(i).second);
+    if (queryresultnonempty) {
+        std::vector<Table::ValueType> min_result;
+        for (unsigned int i=0;i<this->min.size();i++){
+            min_result.emplace_back(this->min.at(i).second);
+        }
+        db.addresult(this->id,std::make_unique<AnswerMsgResult>(min_result));
     }
-    db.addresult(this->id,std::make_unique<AnswerMsgResult>(min_result));
+    else {
+        db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
+    }
     db.table_locks[this->targetTable]->unlock();
     db.queries.erase(this->id);
     //allow the next query to go
