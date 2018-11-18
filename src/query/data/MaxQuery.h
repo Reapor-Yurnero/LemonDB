@@ -33,6 +33,7 @@ public:
 class MaxTask : public Task {
 public:
     using Task::Task;
+    bool findsomething = false;
     std::vector<std::pair<Table::FieldIndex,Table::ValueType>> local_max;
     void execute() override;
 };
