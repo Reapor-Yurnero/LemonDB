@@ -91,7 +91,10 @@ QueryResult::Ptr SelectQuery::mergeAndPrint() {
             selectAnswer.emplace(std::move(*answer_it));
         }
     }
-    db.addresult(this->id,std::make_unique<AnswerMsgResult>(move(selectAnswer)));
+    if(!selectAnswer.empty())
+        db.addresult(this->id,std::make_unique<AnswerMsgResult>(move(selectAnswer)));
+    else
+        db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
     db.table_locks[this->targetTable]->unlock();
     return std::make_unique<NullQueryResult>();
 }

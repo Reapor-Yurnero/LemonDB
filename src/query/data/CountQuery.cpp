@@ -40,6 +40,7 @@ QueryResult::Ptr CountQuery::execute() {
         else{
             db.addresult(this->id,std::make_unique<AnswerMsgResult>(0));
             db.table_locks[this->targetTable]->unlock();
+            db.queries.erase(this->id);
         }
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
