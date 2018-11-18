@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <mutex>
 
 // open timer for all queries
 // #define TIMER
@@ -32,6 +33,11 @@ private:
     std::unordered_map<std::string, std::string> fileTableNameMap;
 
     /**
+     * The map to store multithread results
+     */
+    std::unordered_map<int, QueryResult::Ptr > queryresults;
+
+    /**
      * The default constructor is made private for singleton instance
      */
     Database() = default;
@@ -41,6 +47,12 @@ private:
      */
 
 public:
+    static std::unordered_map<std::string,std::mutex> table_locks;
+
+    void addresult(int id,QueryResult::Ptr queryresult){
+        this->queryresults.emplace(id,std::move(queryresult));
+    }
+
     void testDuplicate(const std::string &tableName);
 
     Table &registerTable(Table::Ptr &&table);
@@ -72,13 +84,23 @@ public:
 
     std::string getFileTableName(const std::string &fileName);
 
+    std::string loadTableNameFromStream(std::istream &is, std::string source = "");
+
     /**
      * Load a table from an input stream (i.e., a file)
      * @param is
      * @param source
      * @return reference of loaded table
      */
-    Table &loadTableFromStream(std::istream &is, std::string source = "");
+    Table &loadTableContentFromStream(std::istream &is, std::string source = "");
+
+    template<class RealTask>
+    void addspecialTask(Database &db, Table *table = nullptr){
+        ThreadPool &threadPool = ThreadPool::getPool();
+        auto newTask = std::unique_ptr<RealTask>(new RealTask());
+        auto newTaskPtr = newTask.get();
+        threadPool.addTask(newTaskPtr);
+    }
 
     void exit();
 };

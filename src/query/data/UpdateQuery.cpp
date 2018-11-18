@@ -27,7 +27,7 @@ QueryResult::Ptr UpdateQuery::execute() {
     Table::SizeType counter = 0;
     try {
         auto &table = db[this->targetTable];
-        std::unique_lock<std::mutex> writeLocker(table.writeLock);
+        db.table_locks[this->targetTable].lock();
         if (this->operands[0] == "KEY") {
             this->keyValue = this->operands[1];
         } else {

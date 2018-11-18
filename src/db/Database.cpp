@@ -114,7 +114,7 @@ std::string Database::getFileTableName(const std::string &fileName) {
     }
 }
 
-Table &Database::loadTableFromStream(std::istream &is, std::string source) {
+std::string Database::loadTableNameFromStream(std::istream &is, std::string source) {
     auto &db = Database::getInstance();
     std::string errString =
             !source.empty() ?
@@ -142,6 +142,30 @@ Table &Database::loadTableFromStream(std::istream &is, std::string source) {
 
     // throw error if tableName duplicates
     db.testDuplicate(tableName);
+    return tableName;
+}
+
+Table &Database::loadTableContentFromStream(std::istream &is, std::string source) {
+    auto &db = Database::getInstance();
+    std::string line;
+    std::stringstream sstream;
+    std::string errString;
+    Table::SizeType fieldCount;
+    std::deque<Table::KeyType> fields;
+    std::string tableName;
+
+    if (!std::getline(is, line))
+        throw LoadFromStreamException(
+                errString + "Failed to read table metadata line."
+        );
+
+    sstream.str(line);
+    sstream >> tableName >> fieldCount;
+    if (!sstream) {
+        throw LoadFromStreamException(
+                errString + "Failed to parse table metadata."
+        );
+    }
 
     if (!(std::getline(is, line))) {
         throw LoadFromStreamException(
@@ -200,8 +224,24 @@ Table &Database::loadTableFromStream(std::istream &is, std::string source) {
 }
 
 void Database::exit() {
-    // We are being lazy here ...
-    // Might cause problem ...
+    // wait for all the table task to complete
+    std::cerr << "here1\n";
+    for (const auto &table : this->tables){
+        this->table_locks[table.first].lock();
+    }
+    std::cerr << "here2\n";
+    for(unsigned int i=1;i<this->queryresults.size()+1;i++) {
+        std::cerr << "here3\n";
+        std::cout << i << "\n";
+        std::cerr << "here4\n";
+        if (queryresults[i]->success()) {
+            if (queryresults[i]->display()) {
+                std::cout << *queryresults[i];
+                //std::cout.flush();
+            }
+        }
+    }
+    std::cerr << "here5\n";
     std::exit(0);
 }
 

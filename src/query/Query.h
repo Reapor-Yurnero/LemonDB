@@ -10,6 +10,7 @@
 #include "../db/Table.h"
 #include "../threadmanage/Task.h"
 #include "../threadmanage/ThreadPool.h"
+#include "../db/Database.h"
 
 #include <functional>
 #include <memory>
@@ -138,7 +139,6 @@ public:
         subTasks.emplace_back(std::move(newTask));
         threadPool.addTask(newTaskPtr);
     }
-
 };
 
 #endif //PROJECT_QUERY_H

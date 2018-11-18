@@ -5,14 +5,15 @@
 #ifndef PROJECT_QUERY_BASE_H
 #define PROJECT_QUERY_BASE_H
 
+
 #include "QueryResult.h"
-#include "../db/Table.h"
 
 #include <functional>
 #include <memory>
 #include <string>
 
 class Query {
+
 protected:
     std::string targetTable;
     int id = -1;
@@ -31,6 +32,10 @@ public:
     virtual QueryResult::Ptr mergeAndPrint() { return nullptr; };
 
     virtual ~Query() = default;
+
+    void assignid(int counter){
+        id = counter;
+    }
 };
 
 class NopQuery : public Query {

@@ -26,7 +26,11 @@ QueryResult::Ptr LoadTableQuery::execute() {
         if (!infile.is_open()) {
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
-        db.loadTableFromStream(infile, this->fileName);
+        this->tablename = db.loadTableNameFromStream(infile, this->fileName);
+        std::mutex lock;
+        db.table_locks.emplace(this->tablename,move(lock));
+        db.table_locks[tablename].lock();
+        db.addspecialTask<LoadTask>(db);
         infile.close();
 #ifdef TIMER
         clock_gettime(CLOCK_MONOTONIC, &ts2);
@@ -41,4 +45,12 @@ QueryResult::Ptr LoadTableQuery::execute() {
 
 std::string LoadTableQuery::toString() {
     return "QUERY = Load TABLE, FILE = \"" + this->fileName + "\"";
+}
+
+void LoadTask::execute() {
+    Database &db = Database::getInstance();
+    auto real_query = dynamic_cast<LoadTableQuery *>(query);
+    std::ifstream infile(real_query->fileName);
+    db.loadTableContentFromStream(infile, real_query->fileName);
+    db.table_locks[real_query->tablename].unlock();
 }

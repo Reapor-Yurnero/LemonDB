@@ -31,7 +31,7 @@ QueryResult::Ptr MaxQuery::execute() {
         /*this->max.clear();*/
         this->max.reserve(this->operands.size());
         auto &table = db[this->targetTable];
-        table.writeLock.lock();
+        db.table_locks[this->targetTable].lock();
         //std::cout<<"table lock acquired\n";
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
@@ -115,13 +115,10 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
     for (unsigned int i=0;i<this->max.size();i++){
         max_result.emplace_back(this->max.at(i).second);
     }
-    std::cout << "ANSWER = ( ";
-    for (auto result : max_result) {
-        std::cout << result << " ";
-    }
-    std::cout << ") \n";
+    db.addresult(this->id,std::make_unique<AnswerMsgResult>(max_result));
+    std::cerr << this->id << "id inserted\n";
     //allow the next query to go
-    table.writeLock.unlock();
+    db.table_locks[this->targetTable].lock();
     //std::cout<<"table lock released\n";
 #ifdef TIMER
     clock_gettime(CLOCK_MONOTONIC, &ts2);

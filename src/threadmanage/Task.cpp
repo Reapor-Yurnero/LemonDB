@@ -9,6 +9,11 @@ Task::Task(Query *query, Table::Iterator begin, Table::Iterator end, Table *tabl
                                                                                      end(end),
                                                                                      table(table), counter(0) {}
 
+Task::Task() : query(),
+               begin(),
+               end(),
+               table(), counter(0) {}
+
 Table::SizeType Task::getCounter() {
     return counter;
 }

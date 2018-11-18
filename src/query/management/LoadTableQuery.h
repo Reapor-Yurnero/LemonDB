@@ -8,10 +8,19 @@
 
 #include "../Query.h"
 
+
+
 class LoadTableQuery : public Query {
     static constexpr const char *qname = "LOAD";
-    const std::string fileName;
+
+#ifdef TIMER
+    struct timespec ts1, ts2;
+#endif
+
 public:
+    const std::string fileName;
+
+    std::string tablename;
 
     explicit LoadTableQuery(std::string table, std::string fileName) :
             Query(std::move(table)), fileName(std::move(fileName)) {}
@@ -20,7 +29,13 @@ public:
 
     std::string toString() override;
 
+    //bool modify() override { return false; }
 };
 
+class LoadTask : public Task {
+public:
+    using Task::Task;
+    void execute() override;
+};
 
 #endif //PROJECT_LOADTABLEQUERY_H

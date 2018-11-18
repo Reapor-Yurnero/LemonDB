@@ -149,9 +149,26 @@ int main(int argc, char *argv[]) {
             std::string queryStr = extractQueryString(is);
             Query::Ptr query = p.parseQuery(queryStr);
             auto q = query.get();
+            q->assignid(counter+1);
             //QueryResult::Ptr result = query->execute();
             queries.emplace_back(std::move(query));
             QueryResult::Ptr result = q->execute();
+            //todo@ now output is done in db.exit().
+            ++counter;
+            if (result->success()) {
+                if (result->display()) {
+                } else {
+#ifndef NDEBUG
+                    std::cout.flush();
+                    std::cerr << *result;
+#endif
+                    //std::cout.flush();
+                }
+            } else {
+                std::cout.flush();
+                std::cerr << "QUERY FAILED:\n\t" << *result;
+            }
+            /*
             std::cout << ++counter << "\n";
             if (result->success()) {
                 if (result->display()) {
@@ -168,6 +185,7 @@ int main(int argc, char *argv[]) {
                 std::cout.flush();
                 std::cerr << "QUERY FAILED:\n\t" << *result;
             }
+             */
         }  catch (const std::ios_base::failure& e) {
             // End of input
             break;
