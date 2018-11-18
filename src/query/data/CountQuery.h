@@ -7,16 +7,29 @@
 
 #include "../Query.h"
 
-class CountQuery : public ComplexQuery {
+class CountQuery : public ConcurrentQuery {
     static constexpr const char *qname = "DELETE";
 public:
-    using ComplexQuery::ComplexQuery;
+    using ConcurrentQuery::ConcurrentQuery;
+
+    unsigned int countresult = 0;
+
+    std::mutex count_mutex;
 
     QueryResult::Ptr execute() override;
+
+    QueryResult::Ptr mergeAndPrint() override;
 
     std::string toString() override;
 
     //bool modify() override { return false; }
 };
+
+class CountTask : public Task {
+public:
+    using Task::Task;
+    void execute() override;
+};
+
 
 #endif //PROJECT_COUNTQUERY_H
