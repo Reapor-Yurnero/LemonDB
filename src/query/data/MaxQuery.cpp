@@ -95,6 +95,7 @@ void MaxTask::execute() {
         }
     }
     //update the global max
+    /*
     {
         std::unique_lock<std::mutex> lock(real_query->g_mutex);
         for (size_t i=0;i<local_max.size();i++){
@@ -102,6 +103,7 @@ void MaxTask::execute() {
                 std::swap(local_max[i].second, real_query->max[i].second);
         }
     }
+     */
     real_query->mergeAndPrint();
 }
 
@@ -112,6 +114,13 @@ QueryResult::Ptr MaxQuery::mergeAndPrint() {
     ++complete_num;
     if(complete_num < (int)concurrency_num){
         return std::make_unique<NullQueryResult>();
+    }
+    for(const auto &task:subTasks){
+        auto real_task = dynamic_cast<MaxTask *>(task.get());
+        for (size_t i=0;i<real_task->local_max.size();i++){
+            if(real_task->local_max[i].second > max[i].second)
+                std::swap(real_task->local_max[i].second, max[i].second);
+        }
     }
     std::vector<Table::ValueType> max_result;
     for (unsigned int i=0;i<this->max.size();i++){
