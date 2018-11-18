@@ -25,6 +25,8 @@ QueryResult::Ptr CopyTableQuery::execute() {
     db.table_locks[this->targetTable]->lock();
     string new_table_tmp = new_table;
     try {
+        db.add_table_lock(new_table);
+        db.table_locks[new_table]->lock();
         std::string tableName = this->targetTable;
         auto new_table = make_unique<Table>(new_table_tmp, db[targetTable]);
         db.registerTable(move(new_table));
@@ -33,9 +35,11 @@ QueryResult::Ptr CopyTableQuery::execute() {
         cerr<<"COPY takes "<<(1000.0*ts2.tv_sec + 1e-6*ts2.tv_nsec
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
-        db.addresult(this->id,make_unique<SuccessMsgResult>(0));
+
+        db.addresult(this->id,make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[new_table_tmp]->unlock();
         db.table_locks[this->targetTable]->unlock();
-        return make_unique<SuccessMsgResult>(0);
+        return make_unique<SuccessMsgResult>(qname, targetTable);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());
     }
