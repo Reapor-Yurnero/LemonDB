@@ -80,6 +80,7 @@ QueryResult::Ptr SumQuery::execute() {
 #endif
         db.addresult(this->id,make_unique<AnswerMsgResult>(sum_result));
         db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(id);
         return std::make_unique<AnswerMsgResult>(sum_result);
     }
     catch (const TableNameNotFound &e) {

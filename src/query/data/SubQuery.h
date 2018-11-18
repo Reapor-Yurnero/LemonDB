@@ -36,7 +36,6 @@ public:
 class SubTask : public Task {
 public:
     using Task::Task;
-    Table::SizeType local_counter=0;
     void execute() override;
 };
 

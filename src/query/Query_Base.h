@@ -16,6 +16,7 @@ class Query {
 
 protected:
     std::string targetTable;
+public:
     int id = -1;
 
 public:

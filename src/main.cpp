@@ -141,8 +141,9 @@ int main(int argc, char *argv[]) {
      *      real task such as Query operators
      * }
      */
-    std::vector<Query::Ptr> queries;
+    //std::vector<Query::Ptr> queries;
     std::ifstream listenFile;
+    Database &db = Database::getInstance();
     while (is) {
         try {
             // A very standard REPL
@@ -164,7 +165,8 @@ int main(int argc, char *argv[]) {
             auto q = query.get();
             q->assignid(counter+1);
             //QueryResult::Ptr result = query->execute();
-            queries.emplace_back(std::move(query));
+            //queries.emplace_back(std::move(query));
+            db.queries.emplace(query->id, std::move(query));
             QueryResult::Ptr result = q->execute();
             //todo@ now output is done in db.exit().
             ++counter;
@@ -203,7 +205,6 @@ int main(int argc, char *argv[]) {
             // End of input
             if(listenFile.is_open())
                 listenFile.close();
-            Database &db = Database::getInstance();
             db.exit();
             break;
         } catch (const std::exception& e) {

@@ -125,6 +125,7 @@ QueryResult::Ptr AddQuery::mergeAndPrint() {
     }
     db.addresult(this->id,std::make_unique<RecordCountResult>(counter));
     db.table_locks[this->targetTable]->unlock();
+    db.queries.erase(id);
     //allow the next query to go
     //std::cout<<"table lock released\n";
 #ifdef TIMER

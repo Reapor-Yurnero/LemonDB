@@ -61,6 +61,7 @@ void LoadTableQuery::addresult_to_db() {
     Database &db=Database::getInstance();
     db.table_locks[this->tablename]->unlock();
     db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
+    db.queries.erase(id);
 }
 
 void LoadTask::execute() {

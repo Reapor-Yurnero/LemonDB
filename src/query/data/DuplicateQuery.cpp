@@ -47,6 +47,7 @@ QueryResult::Ptr DuplicateQuery::execute() {
 #endif
         db.addresult(this->id,make_unique<RecordCountResult>(counter));
         db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(id);
         return make_unique<RecordCountResult>(counter);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);

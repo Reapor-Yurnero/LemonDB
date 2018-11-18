@@ -50,6 +50,8 @@ private:
 public:
     std::unordered_map<std::string,std::unique_ptr<std::mutex>> table_locks;
 
+    std::unordered_map<int, Query::Ptr> queries;
+
     void add_table_lock(std::string tablename){
         //std::mutex lock;
         std::unique_lock<std::mutex> lock(this->table_lock_mutex);
