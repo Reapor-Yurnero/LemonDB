@@ -142,11 +142,24 @@ int main(int argc, char *argv[]) {
      * }
      */
     std::vector<Query::Ptr> queries;
+    std::ifstream listenFile;
     while (is) {
         try {
             // A very standard REPL
             // REPL: Read-Evaluate-Print-Loop
             std::string queryStr = extractQueryString(is);
+            if(queryStr.find("LISTEN") != std::string::npos){
+                std::istringstream listerParser;
+                listerParser.str(queryStr);
+                std::string l, b1, path, b2;
+                listerParser >> l >> b1 >> path >> b2;
+                listenFile.open(path);
+                if(!listenFile.is_open()){
+                    std::cerr << "Can not open file " << path << std::endl;
+                }
+                is.rdbuf(listenFile.rdbuf());
+                continue;
+            }
             Query::Ptr query = p.parseQuery(queryStr);
             auto q = query.get();
             q->assignid(counter+1);
@@ -188,12 +201,16 @@ int main(int argc, char *argv[]) {
              */
         }  catch (const std::ios_base::failure& e) {
             // End of input
+            if(listenFile.is_open())
+                listenFile.close();
             break;
         } catch (const std::exception& e) {
             std::cout.flush();
             std::cerr << e.what() << std::endl;
         }
     }
+    if(listenFile.is_open())
+        listenFile.close();
     /*
     //todo@ implement threads that run query for each table
     while(is){
