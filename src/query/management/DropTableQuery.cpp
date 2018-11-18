@@ -28,7 +28,8 @@ QueryResult::Ptr DropTableQuery::execute() {
                              - (1000.0*ts1.tv_sec + 1e-6*ts1.tv_nsec))<<"ms in all\n";
 #endif
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname));
-        db.table_locks[this->targetTable]->unlock();
+        //db.table_locks[this->targetTable]->unlock();
+        db.table_locks.erase(this->targetTable);
         db.queries.erase(id);
         return make_unique<SuccessMsgResult>(qname);
     } catch (const TableNameNotFound &e) {
