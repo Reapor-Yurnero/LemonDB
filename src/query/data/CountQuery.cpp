@@ -68,12 +68,14 @@ std::string CountQuery::toString() {
 
 QueryResult::Ptr CountQuery::mergeAndPrint() {
     Database &db = Database::getInstance();
-    {
-        std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
-        ++complete_num;
-        if(complete_num < (int)concurrency_num){
-            return std::make_unique<NullQueryResult>();
-        }
+    std::unique_lock<std::mutex> concurrentLocker(concurrentLock);
+    ++complete_num;
+    if(complete_num < (int)concurrency_num){
+        return std::make_unique<NullQueryResult>();
+    }
+    for(const auto &task:subTasks){
+        auto real_task = dynamic_cast<CountTask *>(task.get());
+        countresult += real_task->local_count;
     }
     db.addresult(this->id,std::make_unique<AnswerMsgResult>(this->countresult));
     db.table_locks[this->targetTable]->unlock();
@@ -83,14 +85,16 @@ QueryResult::Ptr CountQuery::mergeAndPrint() {
 
 void CountTask::execute() {
     auto real_query = dynamic_cast<CountQuery *>(query);
-    unsigned int local_count = 0;
+    //unsigned int local_count = 0;
     for (auto table_it = begin;table_it != end;++table_it) {
         if (real_query->evalCondition(*table_it)) ++local_count;
     }
     //update the global count result
+    /*
     {
         std::unique_lock<std::mutex> lock(real_query->count_mutex);
         real_query->countresult += local_count;
     }
+     */
     real_query->mergeAndPrint();
 }

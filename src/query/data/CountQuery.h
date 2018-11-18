@@ -29,6 +29,8 @@ class CountTask : public Task {
 public:
     using Task::Task;
     void execute() override;
+
+    unsigned int local_count = 0;
 };
 
 
