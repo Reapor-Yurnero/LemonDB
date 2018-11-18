@@ -56,7 +56,7 @@ public:
         this->table_locks.emplace(tablename,std::make_unique<std::mutex>());
     }
 
-    void addresult(int id,QueryResult::Ptr queryresult){
+    void addresult(int id,QueryResult::Ptr &&queryresult){
         this->queryresults.emplace(id,std::move(queryresult));
     }
 
