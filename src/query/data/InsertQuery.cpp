@@ -21,12 +21,14 @@ QueryResult::Ptr InsertQuery::execute() {
     struct timespec ts1, ts2;
     clock_gettime(CLOCK_MONOTONIC, &ts1);
 #endif
-    if (this->operands.empty())
+    Database &db = Database::getInstance();
+    if (this->operands.empty()) {
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "No operand (? operands)."_f % operands.size()
         );
-    Database &db = Database::getInstance();
+    }
     try {
         db.table_locks[this->targetTable]->lock();
         auto &table = db[this->targetTable];

@@ -16,12 +16,14 @@ QueryResult::Ptr DeleteQuery::execute() {
     struct timespec ts1, ts2;
     clock_gettime(CLOCK_MONOTONIC, &ts1);
 #endif
-    if (!this->operands.empty())
+    Database &db = Database::getInstance();
+    if (!this->operands.empty()) {
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "Too many operands for delete"
         );
-    Database &db = Database::getInstance();
+    }
     Table::SizeType counter = 0;
     try{
         db.table_locks[this->targetTable]->lock();

@@ -25,6 +25,7 @@ QueryResult::Ptr LoadTableQuery::execute() {
     try {
         ifstream infile(this->fileName);
         if (!infile.is_open()) {
+            db.queries.erase(this->id);
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
         this->tablename = db.loadTableNameFromStream(infile, this->fileName);

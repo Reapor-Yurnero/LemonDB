@@ -23,12 +23,14 @@ QueryResult::Ptr SubQuery::execute() {
     struct timespec ts1, ts2;
     clock_gettime(CLOCK_MONOTONIC, &ts1);
 #endif
-    if (this->operands.empty())
+    Database &db = Database::getInstance();
+    if (this->operands.empty()) {
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "Invalid number of operands (? operands)."_f % operands.size()
         );
-    Database &db = Database::getInstance();
+    }
     Table::SizeType counter = 0;
     try {
         //std::cerr<<this->targetTable <<"    "<< this->id<< "beforelock!\n"  ;

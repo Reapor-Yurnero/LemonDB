@@ -25,6 +25,7 @@ QueryResult::Ptr DumpTableQuery::execute() {
         db.table_locks[this->targetTable]->lock();
         ofstream outfile(this->fileName);
         if (!outfile.is_open()) {
+            db.queries.erase(this->id);
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
         outfile << db[this->targetTable];
