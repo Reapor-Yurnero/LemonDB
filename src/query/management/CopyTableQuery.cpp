@@ -25,6 +25,7 @@ QueryResult::Ptr CopyTableQuery::execute() {
     db.table_locks[this->targetTable]->lock();
     string new_table_tmp = new_table;
     try {
+        db.add_table_lock(new_table);
         std::string tableName = this->targetTable;
         auto new_table = make_unique<Table>(new_table_tmp, db[targetTable]);
         db.registerTable(move(new_table));
