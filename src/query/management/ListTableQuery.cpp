@@ -13,7 +13,8 @@ QueryResult::Ptr ListTableQuery::execute() {
     if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
 
         db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
-        db.queries.erase(this->id);
+        auto temp = move(db.queries[this->id]);
+ db.queries.erase(this->id);
         throw TableNameNotFound(
                 "Error accesing table \"" + this->targetTable + "\". Table not found."
         );
@@ -22,7 +23,8 @@ QueryResult::Ptr ListTableQuery::execute() {
     db.printAllTable();
     db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
     db.table_locks[this->targetTable]->unlock();
-    db.queries.erase(this->id);
+    auto temp = move(db.queries[this->id]);
+ db.queries.erase(this->id);
     return std::make_unique<SuccessMsgResult>(qname);
 }
 

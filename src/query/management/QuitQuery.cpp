@@ -14,7 +14,8 @@ std::string QuitQuery::toString() {
 QueryResult::Ptr QuitQuery::execute() {
     auto &db = Database::getInstance();
     //db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname));
-    db.queries.erase(this->id);
+    auto temp = move(db.queries[this->id]);
+ db.queries.erase(this->id);
     db.exit();
     // might not reach here, but we want to keep the consistency of queries
     return std::make_unique<SuccessMsgResult>(qname);
