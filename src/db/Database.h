@@ -27,10 +27,14 @@ private:
      */
     std::unordered_map<std::string, Table::Ptr> tables;
 
+    std::recursive_mutex tables_lock;
+
     /**
      * The map of fileName -> tableName
      */
     std::unordered_map<std::string, std::string> fileTableNameMap;
+
+    std::mutex fileTableNameMap_lock;
 
     /**
      * The map to store multithread results
