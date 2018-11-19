@@ -14,6 +14,7 @@
 std::unique_ptr<Database> Database::instance = nullptr;
 
 void Database::testDuplicate(const std::string &tableName) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto it = this->tables.find(tableName);
     if (it != this->tables.end()) {
         throw DuplicatedTableName(
@@ -23,6 +24,7 @@ void Database::testDuplicate(const std::string &tableName) {
 }
 
 Table &Database::registerTable(Table::Ptr &&table) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto name = table->name();
     this->testDuplicate(table->name());
     auto result = this->tables.emplace(name, std::move(table));
@@ -31,6 +33,7 @@ Table &Database::registerTable(Table::Ptr &&table) {
 
 
 Table &Database::operator[](const std::string &tableName) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto it = this->tables.find(tableName);
     if (it == this->tables.end()) {
         throw TableNameNotFound(
@@ -41,6 +44,7 @@ Table &Database::operator[](const std::string &tableName) {
 }
 
 const Table &Database::operator[](const std::string &tableName) const {
+    //std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto it = this->tables.find(tableName);
     if (it == this->tables.end()) {
         throw TableNameNotFound(
@@ -51,6 +55,7 @@ const Table &Database::operator[](const std::string &tableName) const {
 }
 
 void Database::dropTable(const std::string &tableName) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto it = this->tables.find(tableName);
     if (it == this->tables.end()) {
         throw TableNameNotFound(
@@ -61,6 +66,7 @@ void Database::dropTable(const std::string &tableName) {
 }
 
 void Database::truncateTable(const std::string &tableName) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto it = this->tables.find(tableName);
     if (it == this->tables.end()) {
         throw TableNameNotFound(
@@ -71,6 +77,7 @@ void Database::truncateTable(const std::string &tableName) {
 }
 
 void Database::printAllTable() {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     const int width = 15;
     std::cout << "Database overview:" << std::endl;
     std::cout << "=========================" << std::endl;
@@ -94,10 +101,12 @@ Database &Database::getInstance() {
 }
 
 void Database::updateFileTableName(const std::string &fileName, const std::string &tableName) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     fileTableNameMap[fileName] = tableName;
 }
 
 std::string Database::getFileTableName(const std::string &fileName) {
+    std::unique_lock<std::mutex> tablesLocker(tables_lock);
     auto it = fileTableNameMap.find(fileName);
     if (it == fileTableNameMap.end()) {
         std::ifstream infile(fileName);

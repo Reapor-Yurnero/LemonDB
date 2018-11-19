@@ -27,6 +27,8 @@ private:
      */
     std::unordered_map<std::string, Table::Ptr> tables;
 
+    std::mutex tables_lock;
+
     /**
      * The map of fileName -> tableName
      */
