@@ -49,6 +49,11 @@ private:
      */
     std::mutex table_lock_mutex;
 
+    /**
+     * The lock for queryresults
+     */
+    std::mutex queryresults_mutex;
+
 public:
     std::unordered_map<int,Query::Ptr> queries;
 
@@ -61,6 +66,7 @@ public:
     }
 
     void addresult(int id,QueryResult::Ptr &&queryresult){
+        std::unique_lock<std::mutex> lock(this->queryresults_mutex);
         this->queryresults.emplace(id,std::move(queryresult));
     }
 

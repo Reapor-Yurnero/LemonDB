@@ -245,6 +245,8 @@ void Database::exit() {
     while(!queries.empty()){}
     for(unsigned int i=1;i<this->queryresults.size()+1;i++) {
         std::cout << i << "\n";
+        if (queryresults.find(i) == queryresults.end())
+            std::cout<<"no result for "<<i<<std::endl;
         if (queryresults[i]->success()) {
             if (queryresults[i]->display()) {
                 std::cout << *queryresults[i];
