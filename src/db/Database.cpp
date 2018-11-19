@@ -10,12 +10,11 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <shared_mutex>
 
 std::unique_ptr<Database> Database::instance = nullptr;
 
 void Database::testDuplicate(const std::string &tableName) {
-    std::shared_lock<std::recursive_mutex> tablesLocker(tables_lock);
+    std::unique_lock<std::recursive_mutex> tablesLocker(tables_lock);
     auto it = this->tables.find(tableName);
     if (it != this->tables.end()) {
         throw DuplicatedTableName(
@@ -35,7 +34,7 @@ Table &Database::registerTable(Table::Ptr &&table) {
 
 
 Table &Database::operator[](const std::string &tableName) {
-    std::shared_lock<std::recursive_mutex> tablesLocker(tables_lock);
+    std::unique_lock<std::recursive_mutex> tablesLocker(tables_lock);
 
     auto it = this->tables.find(tableName);
     if (it == this->tables.end()) {
