@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     } else if (parsedArgs.threads == 0) {
         parsedArgs.threads = std::thread::hardware_concurrency();
-        std::cerr << "lemondb: info: auto detect thread num" << std::endl;
+        std::cerr << "lemondb: info: auto detect thread num = " << parsedArgs.threads << std::endl;
     } else {
         std::cerr << "lemondb: info: running in " << parsedArgs.threads << " threads" << std::endl;
     }
@@ -163,10 +163,10 @@ int main(int argc, char *argv[]) {
             Query::Ptr query = p.parseQuery(queryStr);
             auto q = query.get();
             q->assignid(counter+1);
-            std::cerr << counter+1 << "\n";
+            //std::cerr << counter+1 << "\n";
             //QueryResult::Ptr result = query->execute();
-            db.queries.emplace(counter+1,std::move(query));
-
+            //db.queries.emplace(counter+1,std::move(query));
+            db.queries_push(counter+1, std::move(query));
             //std::cerr << "here\n";
             QueryResult::Ptr result = q->execute();
             //std::cerr << "here2\n";
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
                 } else {
 #ifndef NDEBUG
                     std::cout.flush();
-                    std::cerr << *result;
+                    //std::cerr << *result;
 #endif
                     //std::cout.flush();
                 }

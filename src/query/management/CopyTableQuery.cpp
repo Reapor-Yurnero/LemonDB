@@ -25,8 +25,7 @@ QueryResult::Ptr CopyTableQuery::execute() {
     if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
 
         db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
-        auto temp = move(db.queries[this->id]);
- db.queries.erase(this->id);
+        Query::Ptr tmp = db.queries_erase(this->id);
         throw TableNameNotFound(
                 "Error accesing table \"" + this->targetTable + "\". Table not found."
         );
@@ -48,8 +47,7 @@ QueryResult::Ptr CopyTableQuery::execute() {
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname, targetTable));
         db.table_locks[new_table_tmp]->unlock();
         db.table_locks[this->targetTable]->unlock();
-        auto temp = move(db.queries[this->id]);
- db.queries.erase(this->id);
+        Query::Ptr tmp = db.queries_erase(this->id);
         return make_unique<SuccessMsgResult>(qname, targetTable);
     } catch (const exception &e) {
         return make_unique<ErrorMsgResult>(qname, e.what());

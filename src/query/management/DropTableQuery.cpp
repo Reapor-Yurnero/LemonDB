@@ -23,8 +23,7 @@ QueryResult::Ptr DropTableQuery::execute() {
         if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
 
             db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
-            auto temp = move(db.queries[this->id]);
- db.queries.erase(this->id);
+            Query::Ptr tmp = db.queries_erase(this->id);
             throw TableNameNotFound(
                     "Error accesing table \"" + this->targetTable + "\". Table not found."
             );
@@ -39,8 +38,7 @@ QueryResult::Ptr DropTableQuery::execute() {
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname));
         db.table_locks[this->targetTable]->unlock();
         db.table_locks.erase(this->targetTable);
-        auto temp = move(db.queries[this->id]);
- db.queries.erase(this->id);
+        Query::Ptr tmp = db.queries_erase(this->id);
         return make_unique<SuccessMsgResult>(qname);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, targetTable, "No such table."s);

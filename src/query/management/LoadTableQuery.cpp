@@ -23,18 +23,19 @@ QueryResult::Ptr LoadTableQuery::execute() {
 #endif
     Database &db = Database::getInstance();
     try {
+        /*
         ifstream infile(this->fileName);
         if (!infile.is_open()) {
 
             db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Not File."));
-            auto temp = move(db.queries[this->id]);
- db.queries.erase(this->id);
+            Query::Ptr tmp = db.queries_erase(this->id);
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
-        this->tablename = db.loadTableNameFromStream(infile, this->fileName);
+         */
+        this->tablename = db.getFileTableName(this->fileName);
         db.add_table_lock(this->tablename);
         db.table_locks[tablename]->lock();
-        infile.close();
+        //infile.close();
         addspecialTask<LoadTask>(db);
 
 #ifdef TIMER
@@ -66,8 +67,7 @@ void LoadTableQuery::addresult_to_db() {
     db.table_locks[this->tablename]->unlock();
 
     db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
-    auto temp = move(db.queries[this->id]);
- db.queries.erase(this->id);
+    Query::Ptr tmp = db.queries_erase(this->id);
 }
 
 void LoadTask::execute() {

@@ -27,12 +27,14 @@ private:
      */
     std::unordered_map<std::string, Table::Ptr> tables;
 
-    std::mutex tables_lock;
+    std::recursive_mutex tables_lock;
 
     /**
      * The map of fileName -> tableName
      */
     std::unordered_map<std::string, std::string> fileTableNameMap;
+
+    std::mutex fileTableNameMap_lock;
 
     /**
      * The map to store multithread results
@@ -48,6 +50,11 @@ private:
      * The lock for add table lock
      */
     std::mutex table_lock_mutex;
+
+    /**
+     * The lock for queries
+     */
+    std::mutex queries_mutex;
 
     /**
      * The lock for queryresults
@@ -68,6 +75,20 @@ public:
     void addresult(int id,QueryResult::Ptr &&queryresult){
         std::unique_lock<std::mutex> lock(this->queryresults_mutex);
         this->queryresults.emplace(id,std::move(queryresult));
+    }
+
+    Query::Ptr queries_erase(const int id) {
+        std::unique_lock<std::mutex> locker(queries_mutex);
+        auto &db = Database::getInstance();
+        Query::Ptr tmp = std::move(db.queries[id]);
+        db.queries.erase(id);
+        return tmp;
+    };
+
+    void queries_push(const int id, Query::Ptr q) {
+        std::unique_lock<std::mutex> locker(queries_mutex);
+        auto &db = Database::getInstance();
+        db.queries.emplace(id, std::move(q));
     }
 
     void testDuplicate(const std::string &tableName);
