@@ -23,8 +23,9 @@ QueryResult::Ptr DumpTableQuery::execute() {
     auto &db = Database::getInstance();
     try {
         if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
-            db.queries.erase(this->id);
+
             db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
+            db.queries.erase(this->id);
             throw TableNameNotFound(
                     "Error accesing table \"" + this->targetTable + "\". Table not found."
             );
@@ -32,8 +33,9 @@ QueryResult::Ptr DumpTableQuery::execute() {
         db.table_locks[this->targetTable]->lock();
         ofstream outfile(this->fileName);
         if (!outfile.is_open()) {
-            db.queries.erase(this->id);
+
             db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Not File."));
+            db.queries.erase(this->id);
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
         outfile << db[this->targetTable];

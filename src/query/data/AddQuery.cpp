@@ -24,8 +24,8 @@ QueryResult::Ptr AddQuery::execute() {
 #endif
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
+        db.addresult(this->id, std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         db.queries.erase(this->id);
-        db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "Invalid number of operands (? operands)."_f % operands.size()
@@ -33,30 +33,24 @@ QueryResult::Ptr AddQuery::execute() {
     }
 
     try {
-        if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
-            db.queries.erase(this->id);
-            db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
+        if (db.table_locks.find(this->targetTable) == db.table_locks.end()) {
             throw TableNameNotFound(
                     "Error accesing table \"" + this->targetTable + "\". Table not found."
             );
         }
         db.table_locks[this->targetTable]->lock();
-        this->add_src.reserve(this->operands.size()-1);
+        this->add_src.reserve(this->operands.size() - 1);
         auto &table = db[this->targetTable];
 
-        for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
+        for (auto it = this->operands.begin(); it != this->operands.end(); ++it) {
             if (*it == "KEY") {
-                db.queries.erase(this->id);
-                db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Invalid Argument."));
                 throw invalid_argument(
                         R"(Can not input KEY for ADD.)"_f
                 );
-            }
-            else {
-                if (it+1 != this->operands.end()) {
+            } else {
+                if (it + 1 != this->operands.end()) {
                     add_src.emplace_back(table.getFieldIndex(*it));
-                }
-                else add_des = table.getFieldIndex(*it);
+                } else add_des = table.getFieldIndex(*it);
             }
         }
         auto result = initCondition(table);
@@ -64,9 +58,8 @@ QueryResult::Ptr AddQuery::execute() {
 
         if (result.second) {
             addTaskByPaging<AddTask>(table);
-        }
-        else{
-            db.addresult(this->id,std::make_unique<RecordCountResult>(0));
+        } else {
+            db.addresult(this->id, std::make_unique<RecordCountResult>(0));
             db.table_locks[this->targetTable]->unlock();
             db.queries.erase(this->id);
         }
@@ -97,17 +90,27 @@ QueryResult::Ptr AddQuery::execute() {
         return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
     } catch (const IllFormedQueryCondition &e) {
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, e.what());
     } catch (const invalid_argument &e) {
         // Cannot convert operand to string
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "Unknown error '?'"_f % e.what());
     } catch (const exception &e) {
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "Unkonwn error '?'."_f % e.what());
     }
 }
-
 
 void AddTask::execute() {
     auto real_query = dynamic_cast<AddQuery *>(query);

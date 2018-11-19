@@ -24,8 +24,9 @@ QueryResult::Ptr MinQuery::execute() {
 #endif
     Database &db = Database::getInstance();
     if (this->operands.empty()) {
-        db.queries.erase(this->id);
+
         db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Operands Error."));
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(
                 qname, this->targetTable.c_str(),
                 "No operand (? operands)."_f % operands.size()
@@ -34,8 +35,6 @@ QueryResult::Ptr MinQuery::execute() {
     try {
         /*this->max.clear();*/
         if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
-            db.queries.erase(this->id);
-            db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
             throw TableNameNotFound(
                     "Error accesing table \"" + this->targetTable + "\". Table not found."
             );
@@ -47,8 +46,6 @@ QueryResult::Ptr MinQuery::execute() {
 
         for ( auto it = this->operands.begin();it!=this->operands.end();++it) {
             if (*it == "KEY") {
-                db.queries.erase(this->id);
-                db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Invalid Argument."));
                 throw invalid_argument(
                         R"(Can not input KEY for MAX.)"_f
                 );
@@ -68,13 +65,24 @@ QueryResult::Ptr MinQuery::execute() {
         return make_unique<SuccessMsgResult>(qname);
     }
     catch (const TableNameNotFound &e) {
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
     } catch (const IllFormedQueryCondition &e) {
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, e.what());
     } catch (const invalid_argument &e) {
         // Cannot convert operand to string
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "Unknown error '?'"_f % e.what());
     } catch (const exception &e) {
+        db.addresult(this->id, make_unique<SuccessMsgResult>(qname, targetTable));
+        db.table_locks[this->targetTable]->unlock();
+        db.queries.erase(this->id);
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "Unkonwn error '?'."_f % e.what());
     }
 }
