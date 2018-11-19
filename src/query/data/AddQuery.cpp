@@ -40,7 +40,9 @@ QueryResult::Ptr AddQuery::execute() {
                     "Error accesing table \"" + this->targetTable + "\". Table not found."
             );
         }
+        //std::cerr<<this->targetTable<<" lock exist!\n";
         db.table_locks[this->targetTable]->lock();
+        //std::cerr<<this->id<<" lock acquired!\n";
         this->add_src.reserve(this->operands.size()-1);
         auto &table = db[this->targetTable];
 
@@ -61,7 +63,7 @@ QueryResult::Ptr AddQuery::execute() {
         }
         auto result = initCondition(table);
 
-
+        //cerr<<this->id <<" evaluated condition: "<<result.second<<std::endl;
         if (result.second) {
             addTaskByPaging<AddTask>(table);
         }

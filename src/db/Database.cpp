@@ -221,7 +221,7 @@ Table &Database::loadTableContentFromStream(std::istream &is, std::string source
     }
 
     {
-
+        //std::unique_lock<std::mutex> dblocker(db_lock);
         return db.registerTable(std::move(table));
     }
 }

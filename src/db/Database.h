@@ -43,9 +43,14 @@ private:
     Database() = default;
 
     /**
-     * The lock for add table lock
+     * The lock for add table lock (lock for table_locks map)
      */
     std::mutex table_lock_mutex;
+
+    /**
+     * The lock for db.table
+     */
+    //std::mutex db_lock;
 
 public:
     std::unordered_map<int,Query::Ptr> queries;

@@ -29,9 +29,12 @@ QueryResult::Ptr LoadTableQuery::execute() {
             db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Not File."));
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
+        //if(db.table_locks.find(this->targetTable)!=db.table_locks.end())
+            //std::cerr<<"lock already existed!\n";
         this->tablename = db.loadTableNameFromStream(infile, this->fileName);
         db.add_table_lock(this->tablename);
         db.table_locks[tablename]->lock();
+        //std::cerr<<tablename<<" locked!\n";
         infile.close();
         addspecialTask<LoadTask>(db);
 
@@ -62,6 +65,7 @@ std::string LoadTableQuery::toString() {
 void LoadTableQuery::addresult_to_db() {
     Database &db=Database::getInstance();
     db.table_locks[this->tablename]->unlock();
+    //std::cerr<<tablename<<" unlocked!\n";
     db.queries.erase(this->id);
     db.addresult(this->id,std::make_unique<SuccessMsgResult>(qname, targetTable));
 }
