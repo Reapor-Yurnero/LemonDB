@@ -245,5 +245,3 @@ void Database::exit() {
     }
     std::exit(0);
 }
-
-

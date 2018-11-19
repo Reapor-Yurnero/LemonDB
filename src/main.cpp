@@ -165,8 +165,8 @@ int main(int argc, char *argv[]) {
             q->assignid(counter+1);
             std::cerr << counter+1 << "\n";
             //QueryResult::Ptr result = query->execute();
-            db.queries.emplace(counter+1,std::move(query));
-
+            //db.queries.emplace(counter+1,std::move(query));
+            db.queries_push(counter+1, std::move(query));
             //std::cerr << "here\n";
             QueryResult::Ptr result = q->execute();
             //std::cerr << "here2\n";

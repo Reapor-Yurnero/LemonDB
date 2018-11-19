@@ -47,6 +47,11 @@ private:
      */
     std::mutex table_lock_mutex;
 
+    /**
+     * The lock for queries
+     */
+    std::mutex queries_mutex;
+
 public:
     std::unordered_map<int,Query::Ptr> queries;
 
@@ -60,6 +65,20 @@ public:
 
     void addresult(int id,QueryResult::Ptr &&queryresult){
         this->queryresults.emplace(id,std::move(queryresult));
+    }
+
+    Query::Ptr queries_erase(const int id) {
+        std::unique_lock<std::mutex> locker(queries_mutex);
+        auto &db = Database::getInstance();
+        Query::Ptr tmp = std::move(db.queries[id]);
+        db.queries.erase(id);
+        return tmp;
+    };
+
+    void queries_push(const int id, Query::Ptr q) {
+        std::unique_lock<std::mutex> locker(queries_mutex);
+        auto &db = Database::getInstance();
+        db.queries.emplace(id, std::move(q));
     }
 
     void testDuplicate(const std::string &tableName);
