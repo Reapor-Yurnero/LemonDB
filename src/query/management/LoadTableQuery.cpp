@@ -23,6 +23,7 @@ QueryResult::Ptr LoadTableQuery::execute() {
 #endif
     Database &db = Database::getInstance();
     try {
+        /*
         ifstream infile(this->fileName);
         if (!infile.is_open()) {
 
@@ -30,10 +31,11 @@ QueryResult::Ptr LoadTableQuery::execute() {
             Query::Ptr tmp = db.queries_erase(this->id);
             return make_unique<ErrorMsgResult>(qname, "Cannot open file '?'"_f % this->fileName);
         }
-        this->tablename = db.loadTableNameFromStream(infile, this->fileName);
+         */
+        this->tablename = db.getFileTableName(this->fileName);
         db.add_table_lock(this->tablename);
         db.table_locks[tablename]->lock();
-        infile.close();
+        //infile.close();
         addspecialTask<LoadTask>(db);
 
 #ifdef TIMER
