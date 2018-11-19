@@ -16,7 +16,7 @@ QueryResult::Ptr PrintTableQuery::execute() {
         if(db.table_locks.find(this->targetTable)==db.table_locks.end()){
 
             db.addresult(this->id,std::make_unique<ErrorMsgResult>(qname, "Table Missing."));
-            db.queries_erase(this->id);
+            Query::Ptr tmp = db.queries_erase(this->id);
             throw TableNameNotFound(
                     "Error accesing table \"" + this->targetTable + "\". Table not found."
             );
@@ -29,7 +29,7 @@ QueryResult::Ptr PrintTableQuery::execute() {
         cout << "================\n" << endl;
         db.addresult(this->id,make_unique<SuccessMsgResult>(qname, this->targetTable));
         db.table_locks[this->targetTable]->unlock();
-        db.queries_erase(this->id);
+        Query::Ptr tmp = db.queries_erase(this->id);
         return make_unique<SuccessMsgResult>(qname, this->targetTable);
     } catch (const TableNameNotFound &e) {
         return make_unique<ErrorMsgResult>(qname, this->targetTable, "No such table."s);
