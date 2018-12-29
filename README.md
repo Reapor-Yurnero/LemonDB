@@ -1,21 +1,26 @@
 # LemonDB
+A multi-threaded database for VE482 project 2.
+
 ## Introduction
-This is a multi-thread version of LemonDB based on its recovered version. We have implemented functions for data manipulation and also implemented utility of reading queries from a new file. Please find the detailed description for these functions in [p2.pdf](https://umjicanvas.com/courses/786/files/folder/projects/p2?).
+
+This is a multi-thread version of LemonDB based on its recovered version. We have implemented functions for data manipulation and also implemented utility of reading queries from a new file. Please find the detailed description for these functions in [p2.pdf](./p2.pdf).
 
 Besides these functions, we have also enabled multi-thread manipulation. The design and performance improvements of our database will be introduced below. We have also included common problems related to multi-threading and other suggestions to help you with the work of LemonDB in the future.
+
+## Sample Usage
+
+`./lemondb --listen test.query --threads 8` 
 
 ## Codes & Files
 
 - `./src`
    This contains the source code for LemonDB. `./src/db` contains the implementation for database and table. `./src/query` contains the implementation for database's manipulation. `./src/threadmanage` contains the implementation for threadpool and task division. `./src/utils` contains source code for formatting and exception detection.
 - `./bin`
-   This contains the latest binary.
+   This contains the origin binary for comparison.
 - `./db`
    This contains sample database files.
 - `./sample`
-   This contains sample inputs and outputs.
-
-
+   This contains sample queries.
 
 ## Database Design
 - The database is designed to support at most 8 threads. Threadspool is used here to decrease the unnecessary cost in creating and destroying threads.
